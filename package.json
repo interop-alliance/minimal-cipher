@@ -1,6 +1,6 @@
 {
   "name": "@digitalbazaar/minimal-cipher",
-  "version": "6.1.1",
+  "version": "6.1.2-0",
   "description": "Minimal encryption/decryption JWE library.",
   "license": "BSD-3-Clause",
   "type": "module",

@@ -9,4 +9,6 @@ TAGS
 coverage
 dist
 node_modules
+playwright-report
 reports
+test-results

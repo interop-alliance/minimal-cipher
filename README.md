@@ -19,23 +19,23 @@ TBD
 
 ## Background
 
-Every version of this library will only offer at most two algorithms
-for encryption/decryption: a recommended algorithm and a FIPS-compliant
-algorithm. The encryption API will expect the user to specify "recommended"
-or "fips" as the version of the algorithm to use, defaulting to "recommended".
+Every version of this library will only offer at most two algorithms for
+encryption/decryption: a recommended algorithm and a FIPS-compliant algorithm.
+The encryption API will expect the user to specify "recommended" or "fips" as
+the version of the algorithm to use, defaulting to "recommended".
 
 In the event that the FIPS-compliant algorithm is the same as the recommended
-one in a given version of this library, then that particular version will
-use the same algorithm regardless of the user specified "version".
+one in a given version of this library, then that particular version will use
+the same algorithm regardless of the user specified "version".
 
 This version of the library will use "XChaCha20-Poly1305" as the "recommended"
 version and 256-bit "AES-GCM" as the FIPS-compliant version.
 
-Note: XSalsa20-Poly1305 is an AE (Authenticated Encryption) algorithm, not
-an AEAD (Authenticated Encryption and Associated Data) algorithm, making it
+Note: XSalsa20-Poly1305 is an AE (Authenticated Encryption) algorithm, not an
+AEAD (Authenticated Encryption and Associated Data) algorithm, making it
 incompatible with the current requirements for a
-[JWE (JOSE Web Encryption)](https://tools.ietf.org/html/rfc7516)
-`protected` clear text header.
+[JWE (JOSE Web Encryption)](https://tools.ietf.org/html/rfc7516) `protected`
+clear text header.
 
 This library's API requires an interface for Key Encryption Key (KEKs). This
 enables key material that is protected from exfiltration to be used via HSM/SSM
@@ -61,7 +61,16 @@ To install locally (for development):
 ```sh
 git clone https://github.com/digitalbazaar/minimal-cipher.git
 cd minimal-cipher
-npm install
+pnpm install
+```
+
+This library is written in TypeScript and built with `tsc`. Common scripts:
+
+```sh
+pnpm run build         # type-check and build to dist/
+pnpm run lint          # lint src and test
+pnpm run test:node     # run the Node test suite (vitest)
+pnpm run test:browser  # run the browser smoke test (playwright)
 ```
 
 ## Usage
@@ -69,9 +78,9 @@ npm install
 Pick a Cipher interface (`recommended` or `fips`) and create an instance:
 
 ```js
-import {Cipher} from '@digitalbazaar/minimal-cipher';
+import { Cipher } from '@digitalbazaar/minimal-cipher'
 
-const cipher = new Cipher(); // by default {version: 'recommended'}
+const cipher = new Cipher() // by default {version: 'recommended'}
 ```
 
 ### Encrypting
@@ -79,8 +88,8 @@ const cipher = new Cipher(); // by default {version: 'recommended'}
 To encrypt something (to create a cipher, serialized as a JWE JSON document),
 you will need:
 
-* Some data to encrypt (a string, an object, a stream)
-* Keys (called Key Agreement Keys, or KAKs for short)
+- Some data to encrypt (a string, an object, a stream)
+- Keys (called Key Agreement Keys, or KAKs for short)
 
 (You'll also need a `keyResolver`, more about that later.)
 
@@ -92,23 +101,27 @@ public/private key pairs that will be used to encrypt/decrypt the message):
 
 ```js
 // Retrieve them from config, a ledger, registry or back channel
-const keyAgreementKey = await fetchFromSomewhere();
+const keyAgreementKey = await fetchFromSomewhere()
 
 // or derive them from an existing Ed25519 signing key
-import {X25519KeyAgreementKey2020} from '@digitalbazaar/x25519-key-agreement-key-2020';
-import {Ed25519VerificationKey2020} from '@digitalbazaar/ed25519-verification-key-2020';
-const keyPair = await Ed25519VerificationKey2020.generate();
+import { X25519KeyAgreementKey2020 } from '@digitalbazaar/x25519-key-agreement-key-2020'
+import { Ed25519VerificationKey2020 } from '@digitalbazaar/ed25519-verification-key-2020'
+const keyPair = await Ed25519VerificationKey2020.generate()
 
-const keyAgreementKey = X25519KeyPair.fromEd25519VerificationKey2020({keyPair});
+const keyAgreementKey = X25519KeyPair.fromEd25519VerificationKey2020({
+  keyPair
+})
 // If the source key pair didn't have a controller set, don't forget to set one:
-keyAgreementKey.controller = did; // The controller's DID
-keyAgreementKey.id = `${did}#${keyAgreementKey.fingerprint()}`;
+keyAgreementKey.controller = did // The controller's DID
+keyAgreementKey.id = `${did}#${keyAgreementKey.fingerprint()}`
 
 // or derive them from an authentication key extracted from DID Document
-const didDoc = await veresDriver.get({did});
-const authnKey = didDoc.getVerificationMethod({proofPurpose: 'authentication'});
-const edKeyPair = await Ed25519VerificationKey2020.from(authnKey);
-const keyPair = X25519KeyPair.fromEd25519VerificationKey2020({keyPair});
+const didDoc = await veresDriver.get({ did })
+const authnKey = didDoc.getVerificationMethod({
+  proofPurpose: 'authentication'
+})
+const edKeyPair = await Ed25519VerificationKey2020.from(authnKey)
+const keyPair = X25519KeyPair.fromEd25519VerificationKey2020({ keyPair })
 
 const recipient = {
   header: {
@@ -117,12 +130,12 @@ const recipient = {
   }
 }
 
-const recipients = [recipient];
+const recipients = [recipient]
 ```
 
 You'll also need a `keyResolver`. Notice that `recipients` lists only key IDs,
-not the keys themselves. A `keyResolver` is a function that accepts a key ID
-and resolves to the public key corresponding to it.
+not the keys themselves. A `keyResolver` is a function that accepts a key ID and
+resolves to the public key corresponding to it.
 
 Some example resolvers:
 
@@ -133,17 +146,19 @@ const publicKeyNode = {
   id: keyAgreementKey.id,
   type: 'X25519KeyAgreementKey2020',
   publicKeyMultibase: keyAgreementKey.publicKeyMultibase
-};
-const keyResolver = async () => publicKeyNode;
+}
+const keyResolver = async () => publicKeyNode
 ```
 
 ```js
 // A more advanced resolver based on DID doc authentication keys
-const keyResolver = async ({id}) => {
+const keyResolver = async ({ id }) => {
   // Use veres driver to fetch the authn key directly
-  const keyPair = await Ed25519VerificationKey2020.from(await veresDriver.get({did: id}));
+  const keyPair = await Ed25519VerificationKey2020.from(
+    await veresDriver.get({ did: id })
+  )
   // Convert authn key to key agreement key
-  return X25519KeyPair.fromEd25519VerificationKey2020({keyPair});
+  return X25519KeyPair.fromEd25519VerificationKey2020({ keyPair })
 }
 ```
 
@@ -160,12 +175,12 @@ Create the JWE:
 
 ```js
 // To encrypt a string or a Uint8Array
-const data = 'plain text';
-const jweDoc = await cipher.encrypt({data, recipients, keyResolver});
+const data = 'plain text'
+const jweDoc = await cipher.encrypt({ data, recipients, keyResolver })
 
 // To encrypt an object
-const obj = {key: 'value'};
-const jweDoc = await cipher.encryptObject({obj, recipients, keyResolver});
+const obj = { key: 'value' }
+const jweDoc = await cipher.encryptObject({ obj, recipients, keyResolver })
 ```
 
 ### Decrypting
@@ -173,17 +188,18 @@ const jweDoc = await cipher.encryptObject({obj, recipients, keyResolver});
 Decrypt a JWE JSON Document, using a private `keyAgreementKey`:
 
 ```js
-const data = await cipher.decrypt({jwe, keyAgreementKey});
+const data = await cipher.decrypt({ jwe, keyAgreementKey })
 
-const object = await cipher.decryptObject({jwe, keyAgreementKey});
+const object = await cipher.decryptObject({ jwe, keyAgreementKey })
 ```
 
-TODO: Describe the required KEK API:
-// `id`, `algorithm`, `wrapKey({unwrappedKey})`, and `unwrapKey({wrappedKey})`
+TODO: Describe the required KEK API: // `id`, `algorithm`,
+`wrapKey({unwrappedKey})`, and `unwrapKey({wrappedKey})`
 
 ## Contribute
 
-See [the contribute file](https://github.com/digitalbazaar/bedrock/blob/master/CONTRIBUTING.md)!
+See
+[the contribute file](https://github.com/digitalbazaar/bedrock/blob/master/CONTRIBUTING.md)!
 
 PRs accepted.
 
@@ -192,12 +208,13 @@ If editing the README, please conform to the
 
 ## Commercial Support
 
-Commercial support for this library is available upon request from
-Digital Bazaar: support@digitalbazaar.com
+Commercial support for this library is available upon request from Digital
+Bazaar: support@digitalbazaar.com
 
 ## License
 
 [New BSD License (3-clause)](LICENSE) © Digital Bazaar
 
 [Streams API]: https://developer.mozilla.org/en-US/docs/Web/API/Streams_API
-[Web Crypto API]: https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API
+[Web Crypto API]:
+  https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API

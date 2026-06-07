@@ -1,7 +1,7 @@
 /*!
  * Copyright (c) 2019-2022 Digital Bazaar, Inc. All rights reserved.
  */
-import * as base64url from 'base64url-universal'
+import { base64url } from './baseX.js'
 import type { CipherAlgorithm, JWE, Recipient } from './types.js'
 
 // 1 MiB = 1048576

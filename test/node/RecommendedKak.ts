@@ -1,7 +1,7 @@
 /*!
  * Copyright (c) 2019-2023 Digital Bazaar, Inc. All rights reserved.
  */
-import * as base58 from 'base58-universal'
+import { base58btc as base58 } from '../../src/baseX.js'
 import {
   deriveSecret as dhDeriveSecret,
   multibaseDecode,

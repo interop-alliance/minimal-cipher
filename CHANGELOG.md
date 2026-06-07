@@ -18,6 +18,9 @@
 - Raise `engines.node` to `>=24.0` and run CI on Node 24.
 - Add npm provenance publishing (`publish.yml`); drop the Codecov upload in
   favor of local `vitest` v8 coverage.
+- Replace `base58-universal` and `base64url-universal` with `@scure/base`
+  (via a small `src/baseX.ts` re-export); encoding output is unchanged
+  (unpadded RFC 4648 base64url and base58btc).
 
 ## 6.1.1 - 2026-06-04
 

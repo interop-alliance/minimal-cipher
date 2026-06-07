@@ -1,7 +1,7 @@
 /*!
  * Copyright (c) 2019-2026 Digital Bazaar, Inc.
  */
-import * as base64url from 'base64url-universal'
+import { base64url } from '../baseX.js'
 import crypto from '../crypto.js'
 import { x25519 } from '@noble/curves/ed25519.js'
 import type { EphemeralKeyPair } from '../types.js'

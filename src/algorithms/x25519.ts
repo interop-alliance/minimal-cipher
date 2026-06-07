@@ -1,8 +1,7 @@
 /*!
  * Copyright (c) 2019-2023 Digital Bazaar, Inc. All rights reserved.
  */
-import * as base58btc from 'base58-universal'
-import * as base64url from 'base64url-universal'
+import { base58btc, base64url } from '../baseX.js'
 import { deriveSecret, generateEphemeralKeyPair } from './x25519-helper.js'
 import { createKek } from './aeskw.js'
 import { deriveKey } from './ecdhkdf.js'

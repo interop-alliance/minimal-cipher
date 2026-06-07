@@ -18,12 +18,20 @@
 - Raise `engines.node` to `>=24.0` and run CI on Node 24.
 - Add npm provenance publishing (`publish.yml`); drop the Codecov upload in
   favor of local `vitest` v8 coverage.
-- Replace `base58-universal` and `base64url-universal` with `@scure/base`
-  (via a small `src/baseX.ts` re-export); encoding output is unchanged
-  (unpadded RFC 4648 base64url and base58btc).
+- Replace `base58-universal` and `base64url-universal` with `@scure/base` (via a
+  small `src/baseX.ts` re-export); encoding output is unchanged (unpadded RFC
+  4648 base64url and base58btc).
 - Consolidate `crypto.js` to a single module exporting the native WebCrypto
   `globalThis.crypto` (available in browsers and Node >=24); remove the separate
   `crypto-browser.js` variant and its `browser`-field swap.
+- Replace the `@digitalbazaar/*` test-only devDependencies (`did-io`,
+  `did-method-key`, `ed25519-verification-key-2020`,
+  `x25519-key-agreement-key-2020`) with their TypeScript `@interop/*` forks
+  (`@interop/did-io`, `@interop/did-method-key`,
+  `@interop/ed25519-verification-key`, `@interop/x25519-key-agreement-key`). The
+  `@interop/did-method-key` driver no longer auto-derives an X25519 keyAgreement
+  key from an Ed25519 `did:key`, so the test key resolver now resolves such keys
+  directly from the multibase key fragment.
 
 ## 6.1.1 - 2026-06-04
 

@@ -17,7 +17,7 @@ import { createKeyResolver } from './didKeyResolver.js'
 import { FipsKak } from './FipsKak.js'
 import { RecommendedKak } from './RecommendedKak.js'
 import { store } from './store.js'
-import { X25519KeyAgreementKey2020 } from '@digitalbazaar/x25519-key-agreement-key-2020'
+import { X25519KeyAgreementKey2020 } from '@interop/x25519-key-agreement-key'
 
 const cipherVersions = ['recommended', 'fips']
 const KakClass = new Map<string, any>([

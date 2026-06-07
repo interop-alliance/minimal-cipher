@@ -46,11 +46,11 @@
     "@stablelib/chacha20poly1305": "^2.0.1"
   },
   "devDependencies": {
-    "@digitalbazaar/did-io": "^2.2.0",
-    "@digitalbazaar/did-method-key": "^5.3.0",
-    "@digitalbazaar/ed25519-verification-key-2020": "^4.2.0",
-    "@digitalbazaar/x25519-key-agreement-key-2020": "^3.0.1",
     "@eslint/js": "^10.0.1",
+    "@interop/did-io": "^4.0.2",
+    "@interop/did-method-key": "^7.1.1",
+    "@interop/ed25519-verification-key": "^7.0.2",
+    "@interop/x25519-key-agreement-key": "^4.0.1",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
     "@vitest/coverage-v8": "^4.1.7",

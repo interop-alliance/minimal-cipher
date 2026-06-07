@@ -2,9 +2,10 @@
  * Copyright (c) 2021-2023 Digital Bazaar, Inc. All rights reserved.
  */
 import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey'
-import { CachedResolver } from '@digitalbazaar/did-io'
-import { driver } from '@digitalbazaar/did-method-key'
-import { Ed25519VerificationKey2020 } from '@digitalbazaar/ed25519-verification-key-2020'
+import { CachedResolver } from '@interop/did-io'
+import { driver } from '@interop/did-method-key'
+import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
+import { X25519KeyAgreementKey2020 } from '@interop/x25519-key-agreement-key'
 
 const resolver = new CachedResolver()
 
@@ -12,7 +13,7 @@ const resolver = new CachedResolver()
 const didKeyDriver = driver()
 didKeyDriver.use({
   multibaseMultikeyHeader: 'z6Mk',
-  fromMultibase: Ed25519VerificationKey2020.from
+  fromMultibase: Ed25519VerificationKey.from
 })
 didKeyDriver.use({
   multibaseMultikeyHeader: 'zDna',
@@ -26,6 +27,18 @@ export function createKeyResolver() {
   }: { id?: string } = {}): Promise<any> {
     if (!(id as string).startsWith('did:')) {
       throw new Error(`Key ID "${id}" not supported in resolver.`)
+    }
+    // The @interop/did-method-key driver no longer derives an X25519
+    // keyAgreement key from an Ed25519 did:key, so resolve such keys directly
+    // from the multibase key fragment (which is the X25519 public key).
+    const [did, fragment] = (id as string).split('#')
+    if (fragment?.startsWith('z6LS')) {
+      const key = await X25519KeyAgreementKey2020.from({
+        id,
+        controller: did,
+        publicKeyMultibase: fragment
+      })
+      return key.export({ publicKey: true })
     }
     return resolver.get({ did: id })
   }

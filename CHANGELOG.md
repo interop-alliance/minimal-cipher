@@ -21,6 +21,9 @@
 - Replace `base58-universal` and `base64url-universal` with `@scure/base`
   (via a small `src/baseX.ts` re-export); encoding output is unchanged
   (unpadded RFC 4648 base64url and base58btc).
+- Consolidate `crypto.js` to a single module exporting the native WebCrypto
+  `globalThis.crypto` (available in browsers and Node >=24); remove the separate
+  `crypto-browser.js` variant and its `browser`-field swap.
 
 ## 6.1.1 - 2026-06-04
 

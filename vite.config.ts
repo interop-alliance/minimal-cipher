@@ -12,10 +12,6 @@ const browserAliases = process.env.VITEST
   ? []
   : [
       {
-        find: /^.*\/crypto\.js$/,
-        replacement: fromHere('./src/crypto-browser.ts')
-      },
-      {
         find: /^.*\/c20p\.js$/,
         replacement: fromHere('./src/algorithms/c20p-browser.ts')
       },

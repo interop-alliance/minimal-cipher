@@ -48,7 +48,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@interop/did-io": "^4.0.2",
-    "@interop/did-method-key": "^7.1.1",
+    "@interop/did-method-key": "^7.2.0",
     "@interop/ed25519-verification-key": "^7.0.2",
     "@interop/x25519-key-agreement-key": "^4.0.1",
     "@playwright/test": "^1.60.0",

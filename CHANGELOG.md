@@ -27,11 +27,11 @@
 - Replace the `@digitalbazaar/*` test-only devDependencies (`did-io`,
   `did-method-key`, `ed25519-verification-key-2020`,
   `x25519-key-agreement-key-2020`) with their TypeScript `@interop/*` forks
-  (`@interop/did-io`, `@interop/did-method-key`,
+  (`@interop/did-io`, `@interop/did-method-key@^7.2.0`,
   `@interop/ed25519-verification-key`, `@interop/x25519-key-agreement-key`). The
-  `@interop/did-method-key` driver no longer auto-derives an X25519 keyAgreement
-  key from an Ed25519 `did:key`, so the test key resolver now resolves such keys
-  directly from the multibase key fragment.
+  `@interop/did-method-key` driver does not auto-derive an X25519 keyAgreement
+  key from an Ed25519 `did:key` by default, so the test key resolver registers
+  the Ed25519 suite with `enableEncryptionKeyDerivation: true`.
 
 ## 6.1.1 - 2026-06-04
 

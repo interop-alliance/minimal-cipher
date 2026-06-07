@@ -6,8 +6,9 @@ import { expect, test } from '@playwright/test'
 // Smoke test: load the source in a real browser (where vite swaps in the
 // browser crypto variants via the aliases in vite.config.ts) and prove a core
 // encrypt -> decrypt round-trip works with the `recommended` (XC20P + X25519)
-// algorithms. This exercises crypto-browser, c20p-browser, x25519-helper-browser
-// and the @noble/curves + @stablelib dependencies in-browser.
+// algorithms. This exercises c20p-browser, x25519-helper-browser, the WebCrypto
+// `globalThis.crypto`, and the @noble/curves + @stablelib dependencies
+// in-browser.
 test('recommended cipher round-trips in the browser', async ({ page }) => {
   await page.goto('/test/index.html')
 

@@ -14,7 +14,6 @@
   },
   "module": "dist/index.js",
   "browser": {
-    "./dist/crypto.js": "./dist/crypto-browser.js",
     "./dist/algorithms/c20p.js": "./dist/algorithms/c20p-browser.js",
     "./dist/algorithms/x25519-helper.js": "./dist/algorithms/x25519-helper-browser.js"
   },

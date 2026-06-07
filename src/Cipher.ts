@@ -1,7 +1,7 @@
 /*!
  * Copyright (c) 2019-2026 Digital Bazaar, Inc.
  */
-import * as base64url from 'base64url-universal'
+import { base64url } from './baseX.js'
 import * as fipsAlgorithm from './algorithms/fips.js'
 import * as recAlgorithm from './algorithms/recommended.js'
 import { DecryptTransformer } from './DecryptTransformer.js'

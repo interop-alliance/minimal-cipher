@@ -1,7 +1,7 @@
 /*!
  * Copyright (c) 2019-2023 Digital Bazaar, Inc. All rights reserved.
  */
-import * as base64url from 'base64url-universal'
+import { base64url } from '../baseX.js'
 import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey'
 import { createKek } from './aeskw.js'
 import { deriveKey } from './ecdhkdf.js'

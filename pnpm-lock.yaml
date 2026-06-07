@@ -14,18 +14,15 @@ importers:
       '@noble/curves':
         specifier: ^2.2.0
         version: 2.2.0
+      '@scure/base':
+        specifier: ^2.2.0
+        version: 2.2.0
       '@stablelib/chacha':
         specifier: ^2.0.1
         version: 2.0.1
       '@stablelib/chacha20poly1305':
         specifier: ^2.0.1
         version: 2.0.1
-      base58-universal:
-        specifier: ^2.0.0
-        version: 2.0.0
-      base64url-universal:
-        specifier: ^2.0.0
-        version: 2.0.0
     devDependencies:
       '@digitalbazaar/did-io':
         specifier: ^2.2.0
@@ -333,6 +330,9 @@ packages:
 
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
+
+  '@scure/base@2.2.0':
+    resolution: {integrity: sha512-b8XEupJibegiXV+tDUseI8oLQc8ei3d/4Jkb2RpbHh3MfE054ov3uIz2dhFkB3FI8iwYkEh0gGCApkrYggkPNg==}
 
   '@stablelib/aead@2.0.0':
     resolution: {integrity: sha512-U/RMANRxbT/ahIpYsPSiFwDFNjADHdnCFfmo09MO1ai2XmerPAOPtMl0qmX7XVvygnACC6ijKDyHBoT2rGyElg==}
@@ -1300,6 +1300,8 @@ snapshots:
     optional: true
 
   '@rolldown/pluginutils@1.0.1': {}
+
+  '@scure/base@2.2.0': {}
 
   '@stablelib/aead@2.0.0': {}
 

@@ -8,9 +8,12 @@ importers:
 
   .:
     dependencies:
-      '@digitalbazaar/ecdsa-multikey':
-        specifier: ^1.8.0
-        version: 1.8.0
+      '@interop/data-integrity-core':
+        specifier: ^6.1.2
+        version: 6.1.2
+      '@interop/ecdsa-multikey':
+        specifier: ^2.1.0
+        version: 2.1.0
       '@noble/curves':
         specifier: ^2.2.0
         version: 2.2.0
@@ -37,8 +40,8 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       '@interop/x25519-key-agreement-key':
-        specifier: ^4.0.1
-        version: 4.0.1
+        specifier: ^4.0.2
+        version: 4.0.2
       '@playwright/test':
         specifier: ^1.60.0
         version: 1.60.0
@@ -100,10 +103,6 @@ packages:
 
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
-    engines: {node: '>=18'}
-
-  '@digitalbazaar/ecdsa-multikey@1.8.0':
-    resolution: {integrity: sha512-Xo4oBCb0bJv6PYNBrLBZfR/jA2uNd9Bi+YTnadFtxTbhMQrSN0nTw3OnTBOOC7zxtL3t4N00ZweQM4zhsV6gVQ==}
     engines: {node: '>=18'}
 
   '@digitalbazaar/x25519-key-agreement-key-2020@3.0.1':
@@ -190,6 +189,10 @@ packages:
     resolution: {integrity: sha512-nxeBj1zm8oq3X78Yb+NsXmv7BKBAi6ijS7BqSRUBfud9l8M3eqnSkrj2/0a7tToz87RBARvfelh8yrZyE9L+XA==}
     engines: {node: '>=24.0'}
 
+  '@interop/ecdsa-multikey@2.1.0':
+    resolution: {integrity: sha512-oZ1Jgc0+ljCbIiTkk+3za0u53zxJTF55b3/oD3uO84XufYh0CzoRTdPHOOeZVlKikRtPVRY1D/QWBO1kDnGwDA==}
+    engines: {node: '>=24.0'}
+
   '@interop/ed25519-verification-key@7.0.2':
     resolution: {integrity: sha512-2x8P2LWuroLjH6wSVGJadWcXc+kETNZZH5s6dd6Vi6Ibvc09f1Dk7cS0JZSaUy07qInWLe/ZspJJWakXkEy8kA==}
     engines: {node: '>=20'}
@@ -203,8 +206,8 @@ packages:
     resolution: {integrity: sha512-6c8dnoQNIiL25Q4YovC1a44mREO1lzW3F/lmvdwbAMMbhtGGRoQeqo1H4diwNhBzaxRrUMXrAIwbM26POmI/Yg==}
     engines: {node: '>=24.0'}
 
-  '@interop/x25519-key-agreement-key@4.0.1':
-    resolution: {integrity: sha512-wBYAVfec5m2b9WZ3qSraHu6KEvmJNH7ehW5Co8w/SsLCw4R2XmHYRC+DPx6nFArc+LBEyw++fZl6kfy1+gb3zQ==}
+  '@interop/x25519-key-agreement-key@4.0.2':
+    resolution: {integrity: sha512-5TfLCcn46kUkmJ5c5aXrtNCA5SbpPmvaN9V7SjcRZhmdkbafa8ibbmsjmrmkWv899Ub/lGozRf4d/r+Gsrw8ag==}
     engines: {node: '>=24.0'}
 
   '@jridgewell/resolve-uri@3.1.2':
@@ -518,14 +521,6 @@ packages:
   base58-universal@2.0.0:
     resolution: {integrity: sha512-BgkgF8zVLOAygszG4W8NkLm7iXrw80VYAOcedrzANrIhS14+4W6zVqjyGTFUBM/FpqkHUt8aAYd4DbBBfn3zKg==}
     engines: {node: '>=14'}
-
-  base64url-universal@2.0.0:
-    resolution: {integrity: sha512-6Hpg7EBf3t148C3+fMzjf+CHnADVDafWzlJUXAqqqbm4MKNXbsoPdOkWeRTjNlkYG7TpyjIpRO1Gk0SnsFD1rw==}
-    engines: {node: '>=14'}
-
-  base64url@3.0.1:
-    resolution: {integrity: sha512-ir1UPr3dkwexU7FdV8qBBbNDRUhMmIekYMFZfi+C/sLNnRESKPl23nB9b2pltqfOQNnGzsDdId90AEtG5tCx4A==}
-    engines: {node: '>=6.0.0'}
 
   brace-expansion@5.0.6:
     resolution: {integrity: sha512-kLpxurY4Z4r9sgMsyG0Z9uzsBlgiU/EFKhj/h91/8yHu0edo7XuixOIH3VcJ8kkxs6/jPzoI6U9Vj3WqbMQ94g==}
@@ -1127,11 +1122,6 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@digitalbazaar/ecdsa-multikey@1.8.0':
-    dependencies:
-      base58-universal: 2.0.0
-      base64url-universal: 2.0.0
-
   '@digitalbazaar/x25519-key-agreement-key-2020@3.0.1':
     dependencies:
       '@noble/ed25519': 1.7.5
@@ -1221,6 +1211,11 @@ snapshots:
     transitivePeerDependencies:
       - react-native-get-random-values
 
+  '@interop/ecdsa-multikey@2.1.0':
+    dependencies:
+      '@interop/data-integrity-core': 6.1.2
+      '@scure/base': 2.2.0
+
   '@interop/ed25519-verification-key@7.0.2':
     dependencies:
       '@interop/data-integrity-core': 6.1.2
@@ -1232,12 +1227,11 @@ snapshots:
     dependencies:
       lru-cache: 11.5.1
 
-  '@interop/x25519-key-agreement-key@4.0.1':
+  '@interop/x25519-key-agreement-key@4.0.2':
     dependencies:
       '@interop/data-integrity-core': 6.1.2
       '@noble/curves': 2.2.0
       '@scure/base': 2.2.0
-      tweetnacl: 1.0.3
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
@@ -1549,12 +1543,6 @@ snapshots:
   balanced-match@4.0.4: {}
 
   base58-universal@2.0.0: {}
-
-  base64url-universal@2.0.0:
-    dependencies:
-      base64url: 3.0.1
-
-  base64url@3.0.1: {}
 
   brace-expansion@5.0.6:
     dependencies:

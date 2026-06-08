@@ -2,7 +2,7 @@
  * Copyright (c) 2019-2026 Digital Bazaar, Inc.
  */
 import { beforeEach, describe, expect, it } from 'vitest'
-import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey'
+import * as EcdsaMultikey from '@interop/ecdsa-multikey'
 import {
   fipsKey1Data,
   fipsKey2Data,

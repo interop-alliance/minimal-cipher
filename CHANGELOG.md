@@ -1,6 +1,6 @@
 # minimal-cipher ChangeLog
 
-## 6.1.2 - TBD
+## 7.0.0 - TBD
 
 ### Changed
 
@@ -24,6 +24,14 @@
 - Consolidate `crypto.js` to a single module exporting the native WebCrypto
   `globalThis.crypto` (available in browsers and Node >=24); remove the separate
   `crypto-browser.js` variant and its `browser`-field swap.
+- Replace the `@digitalbazaar/ecdsa-multikey` runtime dependency with its
+  TypeScript `@interop/ecdsa-multikey@^2.1.0` fork (which ships its own type
+  declarations, so the local ambient `shims.d.ts` is removed). Add
+  `@interop/data-integrity-core@^6.1.2` and use its exported interface types
+  (e.g. `IMultikeyDocument`) in the P-256 key-agreement code. The fork's
+  `from()` accepts the data-integrity-core verification-method types and its
+  `Jwk`/`fromJwk`/`toJwk` surface uses the strict EC JWK types
+  (`IEcPublicJwk`/`IEcSecretJwk`).
 - Replace the `@digitalbazaar/*` test-only devDependencies (`did-io`,
   `did-method-key`, `ed25519-verification-key-2020`,
   `x25519-key-agreement-key-2020`) with their TypeScript `@interop/*` forks

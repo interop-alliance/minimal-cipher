@@ -2,7 +2,9 @@
  * Copyright (c) 2019-2023 Digital Bazaar, Inc. All rights reserved.
  */
 import { base64url } from '../baseX.js'
-import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey'
+import * as EcdsaMultikey from '@interop/ecdsa-multikey'
+import type { Jwk, KeyPairInterface } from '@interop/ecdsa-multikey'
+import type { IMultikeyDocument } from '@interop/data-integrity-core'
 import { createKek } from './aeskw.js'
 import { deriveKey } from './ecdhkdf.js'
 import type {
@@ -35,7 +37,12 @@ export async function kekFromEphemeralPeer({
   }
   const jwk = { ...epk }
   jwk.key_ops = ['deriveBits']
-  const publicKey = await EcdsaMultikey.fromJwk({ jwk, secretKey: true })
+  // the `epk` is validated above as an EC P-256 JWK, but the loose JWE-header
+  // `Epk` shape does not structurally satisfy the strict EC `Jwk`
+  const publicKey = await EcdsaMultikey.fromJwk({
+    jwk: jwk as unknown as Jwk,
+    secretKey: true
+  })
 
   // export to multikey key for Web KMS transport and to raw for `producerInfo`
   const [ephemeralPublicKey, { publicKey: rawPublicKey }] = await Promise.all([
@@ -47,7 +54,7 @@ export async function kekFromEphemeralPeer({
   // https://tools.ietf.org/html/rfc7748#section-7 pose any issues?
   const encoder = new TextEncoder()
   // "Party U Info"
-  const producerInfo = rawPublicKey
+  const producerInfo = rawPublicKey as Uint8Array
   // "Party V Info"
   const consumerInfo = encoder.encode(keyAgreementKey.id)
   const secret = await keyAgreementKey.deriveSecret({
@@ -74,7 +81,7 @@ export async function kekFromStaticPeer({
 }: {
   ephemeralKeyPair: EphemeralKeyPair
 
-  staticPublicKey: any
+  staticPublicKey: IMultikeyDocument
 }): Promise<KekFromStaticPeerResult> {
   if (!staticPublicKey) {
     throw new Error('"staticPublicKey" is required.')
@@ -113,7 +120,11 @@ export async function generateEphemeralKeyPair(): Promise<EphemeralKeyPair> {
     raw: true
   })
   const epk = await EcdsaMultikey.toJwk({ keyPair, secretKey: true })
-  return { privateKey, publicKey, epk }
+  return {
+    privateKey: privateKey as Uint8Array,
+    publicKey: publicKey as Uint8Array,
+    epk: epk as unknown as Epk
+  }
 }
 
 async function _deriveSecret({
@@ -122,10 +133,13 @@ async function _deriveSecret({
 }: {
   ephemeralKeyPair: EphemeralKeyPair
 
-  remotePublicKey: any
+  remotePublicKey: KeyPairInterface
 }): Promise<Uint8Array> {
   const jwk = { ...ephemeralKeyPair.epk }
   jwk.key_ops = ['deriveBits']
-  const privateKey = await EcdsaMultikey.fromJwk({ jwk, secretKey: true })
+  const privateKey = await EcdsaMultikey.fromJwk({
+    jwk: jwk as unknown as Jwk,
+    secretKey: true
+  })
   return privateKey.deriveSecret({ remotePublicKey })
 }

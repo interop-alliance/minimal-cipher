@@ -3,9 +3,10 @@
  */
 import { base64url } from '../baseX.js'
 import crypto from '../crypto.js'
-import type { Kek as KekInterface } from '../types.js'
+import type { KEK as KEKInterface } from '../types.js'
 
-class Kek {
+class Kek implements KEKInterface {
+  // `CryptoKey` is the Web Crypto API key type, sourced from the DOM lib.
   key: CryptoKey
   algorithm: { name: string }
 
@@ -95,7 +96,7 @@ export async function createKek({
   keyData
 }: {
   keyData: Uint8Array
-}): Promise<KekInterface> {
+}): Promise<KEKInterface> {
   const extractable = true
   const key = await crypto.subtle.importKey(
     'raw',

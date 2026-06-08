@@ -1,6 +1,7 @@
 /*!
  * Copyright (c) 2019-2026 Digital Bazaar, Inc.
  */
+import type { IEPK, IKeyAgreementKey } from '@interop/data-integrity-core'
 
 /** Result of a content-encryption operation. */
 export interface EncryptResult {
@@ -33,52 +34,32 @@ export interface CipherAlgorithm {
   decrypt(options: CipherDecryptOptions): Promise<Uint8Array | null>
 }
 
-/** An ephemeral public key, encoded as a JWK. */
-export interface Epk {
-  kty: string
-  crv: string
-  x?: string
-  [key: string]: unknown
-}
-
 /** An ephemeral key pair used during key agreement. */
 export interface EphemeralKeyPair {
   privateKey: Uint8Array
   publicKey: Uint8Array
-  epk: Epk
+  epk: IEPK
 }
 
 /** A key-encryption key (KEK) used to wrap/unwrap a CEK. */
-export interface Kek {
+export interface KEK {
   algorithm: { name: string }
   wrapKey(options: { unwrappedKey: Uint8Array }): Promise<string>
   unwrapKey(options: { wrappedKey: string }): Promise<Uint8Array | null>
 }
 
 /** Result of deriving a KEK from a static peer (encryption case). */
-export interface KekFromStaticPeerResult {
-  kek: Kek
-  epk: Epk
+export interface KEKFromStaticPeerResult {
+  kek: KEK
+  epk: IEPK
   apu: string
   apv: string
   ephemeralPublicKey: Uint8Array
 }
 
 /** Result of deriving a KEK from an ephemeral peer (decryption case). */
-export interface KekFromEphemeralPeerResult {
-  kek: Kek
-}
-
-/**
- * A key agreement key (KAK) API, as provided by the caller. External key
- * implementations vary, so the non-identifying surface is left loose.
- */
-export interface KeyAgreementKey {
-  id: string
-
-  algorithm?: any
-
-  deriveSecret(options: { publicKey: any }): Promise<Uint8Array>
+export interface KEKFromEphemeralPeerResult {
+  kek: KEK
 }
 
 /** A key agreement algorithm (e.g. X25519, P-256). */
@@ -89,39 +70,9 @@ export interface KeyAgreementAlgorithm {
     ephemeralKeyPair: EphemeralKeyPair
 
     staticPublicKey: any
-  }): Promise<KekFromStaticPeerResult>
+  }): Promise<KEKFromStaticPeerResult>
   kekFromEphemeralPeer(options: {
-    keyAgreementKey: KeyAgreementKey
-    epk: Epk
-  }): Promise<KekFromEphemeralPeerResult>
+    keyAgreementKey: IKeyAgreementKey
+    epk: IEPK
+  }): Promise<KEKFromEphemeralPeerResult>
 }
-
-/** The JWE recipient header. */
-export interface RecipientHeader {
-  kid?: string
-  alg?: string
-  epk?: Epk
-  apu?: string
-  apv?: string
-  [key: string]: unknown
-}
-
-/** A JWE recipient. */
-export interface Recipient {
-  header: RecipientHeader
-  encrypted_key?: string
-  [key: string]: unknown
-}
-
-/** A JSON Web Encryption (JWE) object. */
-export interface JWE {
-  protected: string
-  recipients: Recipient[]
-  iv: string
-  ciphertext: string
-  tag: string
-}
-
-/** Resolves a key ID to a DH public key. */
-
-export type KeyResolver = (options: { id?: string }) => Promise<any>

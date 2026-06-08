@@ -8,32 +8,34 @@ import { DecryptTransformer } from './DecryptTransformer.js'
 import { EncryptTransformer } from './EncryptTransformer.js'
 import { stringToUint8Array } from './util.js'
 import type {
+  IJWE,
+  IKeyAgreementKey,
+  IKeyResolver,
+  IRecipient
+} from '@interop/data-integrity-core'
+import type {
   CipherAlgorithm,
   EphemeralKeyPair,
-  JWE,
-  KeyAgreementAlgorithm,
-  KeyAgreementKey,
-  KeyResolver,
-  Recipient
+  KeyAgreementAlgorithm
 } from './types.js'
 
 const VERSIONS = ['recommended', 'fips']
 
 interface EncryptOptions {
   data?: Uint8Array | string
-  recipients: Recipient[]
-  keyResolver: KeyResolver
+  recipients: IRecipient[]
+  keyResolver: IKeyResolver
 }
 
 interface EncryptObjectOptions {
   obj: object
-  recipients: Recipient[]
-  keyResolver: KeyResolver
+  recipients: IRecipient[]
+  keyResolver: IKeyResolver
 }
 
 interface CreateEncryptOptions {
-  recipients: Recipient[]
-  keyResolver: KeyResolver
+  recipients: IRecipient[]
+  keyResolver: IKeyResolver
   chunkSize?: number
 }
 
@@ -127,7 +129,7 @@ export class Cipher {
   async createDecryptStream({
     keyAgreementKey
   }: {
-    keyAgreementKey: KeyAgreementKey
+    keyAgreementKey: IKeyAgreementKey
   }): Promise<TransformStream> {
     const transformer = await this.createDecryptTransformer({ keyAgreementKey })
     return new TransformStream(transformer)
@@ -156,7 +158,7 @@ export class Cipher {
     data,
     recipients,
     keyResolver
-  }: EncryptOptions): Promise<JWE> {
+  }: EncryptOptions): Promise<IJWE> {
     if (!(data instanceof Uint8Array) && typeof data !== 'string') {
       throw new TypeError('"data" must be a Uint8Array or a string.')
     }
@@ -181,7 +183,7 @@ export class Cipher {
    *
    * @returns {Promise<object>} Resolves to a JWE.
    */
-  async encryptObject({ obj, ...rest }: EncryptObjectOptions): Promise<JWE> {
+  async encryptObject({ obj, ...rest }: EncryptObjectOptions): Promise<IJWE> {
     if (typeof obj !== 'object') {
       throw new TypeError('"obj" must be an object.')
     }
@@ -213,8 +215,8 @@ export class Cipher {
     jwe,
     keyAgreementKey
   }: {
-    jwe: JWE
-    keyAgreementKey: KeyAgreementKey
+    jwe: IJWE
+    keyAgreementKey: IKeyAgreementKey
   }): Promise<Uint8Array | null> {
     const transformer = await this.createDecryptTransformer({ keyAgreementKey })
     return transformer.decrypt(jwe)
@@ -236,8 +238,8 @@ export class Cipher {
     jwe,
     keyAgreementKey
   }: {
-    jwe: JWE
-    keyAgreementKey: KeyAgreementKey
+    jwe: IJWE
+    keyAgreementKey: IKeyAgreementKey
   }): Promise<object | null> {
     const data = await this.decrypt({ jwe, keyAgreementKey })
     if (!data) {
@@ -328,7 +330,7 @@ export class Cipher {
   async createDecryptTransformer({
     keyAgreementKey
   }: {
-    keyAgreementKey: KeyAgreementKey
+    keyAgreementKey: IKeyAgreementKey
   }): Promise<DecryptTransformer> {
     return new DecryptTransformer({
       keyAgreement: this.keyAgreement,
@@ -356,11 +358,11 @@ export class Cipher {
     cek,
     keyResolver
   }: {
-    recipient: Recipient
+    recipient: IRecipient
     ephemeralKeyPair: EphemeralKeyPair
     cek: Uint8Array
-    keyResolver: KeyResolver
-  }): Promise<Recipient> {
+    keyResolver: IKeyResolver
+  }): Promise<IRecipient> {
     if (!recipient) {
       throw new TypeError('"options.recipient" is required.')
     }

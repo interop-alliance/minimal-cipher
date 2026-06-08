@@ -1,13 +1,27 @@
 # minimal-cipher ChangeLog
 
+## 7.1.0 - TBD
+
+### Changed
+
+- Source the shared JOSE/JWE types and the runtime key-agreement contract from
+  `@interop/data-integrity-core` instead of defining them locally, and use the
+  `I`-prefixed names (`IJWE`, `IRecipient`, `IRecipientHeader`, `IEPK`,
+  `IKeyResolver`, `IKeyAgreementKey`) throughout. The previous local type names
+  (`JWE`, `Recipient`, `RecipientHeader`, `Epk`, `KeyResolver`,
+  `KeyAgreementKey`) are removed; the public `Cipher` API is structurally
+  unchanged.
+- Require `@interop/data-integrity-core@^6.3.0`.
+
 ## 7.0.0-7.0.1 - 2026-06-08
 
 ### Changed
 
 - **Infrastructure only; no changes to library behavior, public API, or return
   shapes.**
-- Fork to `@interop/minimal-cipher` (renamed from `@digitalbazaar/minimal-cipher`);
-  repository moved to `interop-alliance/minimal-cipher`.
+- Fork to `@interop/minimal-cipher` (renamed from
+  `@digitalbazaar/minimal-cipher`); repository moved to
+  `interop-alliance/minimal-cipher`.
 - Convert the source from JavaScript to TypeScript (now built with `tsc` to
   `dist/`, with emitted type declarations).
 - Align tooling with the isomorphic-lib-template: `pnpm` (with

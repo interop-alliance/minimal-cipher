@@ -39,8 +39,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@interop/data-integrity-core": "^6.1.2",
-    "@interop/ecdsa-multikey": "^2.1.0",
+    "@interop/data-integrity-core": "^6.4.0",
+    "@interop/ecdsa-multikey": "^2.2.0",
     "@noble/curves": "^2.2.0",
     "@scure/base": "^2.2.0",
     "@stablelib/chacha": "^2.0.1",

@@ -1,6 +1,6 @@
 # minimal-cipher ChangeLog
 
-## 7.1.0 - TBD
+## 7.1.0 - 2026-06-08
 
 ### Changed
 

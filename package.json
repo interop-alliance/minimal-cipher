@@ -1,6 +1,6 @@
 {
   "name": "@interop/minimal-cipher",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "Minimal encryption/decryption JWE library.",
   "license": "BSD-3-Clause",
   "type": "module",
@@ -90,8 +90,7 @@
   },
   "homepage": "https://github.com/interop-alliance/minimal-cipher",
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "packageManager": "pnpm@11.5.0",
   "engines": {

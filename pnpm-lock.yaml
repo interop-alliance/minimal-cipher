@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@interop/data-integrity-core':
-        specifier: ^6.1.2
-        version: 6.1.2
+        specifier: ^6.4.0
+        version: 6.4.0
       '@interop/ecdsa-multikey':
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^2.2.0
+        version: 2.2.0
       '@noble/curves':
         specifier: ^2.2.0
         version: 2.2.0
@@ -181,6 +181,10 @@ packages:
     resolution: {integrity: sha512-koNgRHhQ26JUVdCnjJPloJA18cSUpWwqa3CFuwekoKztOUl6/ZgubFvi9FSGNEuAWq2RJuSVUXgvlRl7XrSHhQ==}
     engines: {node: '>=24.0'}
 
+  '@interop/data-integrity-core@6.4.0':
+    resolution: {integrity: sha512-UXKSCXEc6FangVrfbuY+yL2sH8OccpR54m11zZXMNE4VvkCrYo33Wa8xjt1JkS0RNm1xm1OaxJi7EXpAKpHT0Q==}
+    engines: {node: '>=24.0'}
+
   '@interop/did-io@4.0.2':
     resolution: {integrity: sha512-dYNxTXY6SMKIsHH9U4fSF7IBH/bmflOtrtxqfKDABg5nCNLffBcZVYpXtta6zrlOXrAKLVkJS5GOG+ztbiR7Ew==}
     engines: {node: '>=24.0'}
@@ -189,8 +193,8 @@ packages:
     resolution: {integrity: sha512-nxeBj1zm8oq3X78Yb+NsXmv7BKBAi6ijS7BqSRUBfud9l8M3eqnSkrj2/0a7tToz87RBARvfelh8yrZyE9L+XA==}
     engines: {node: '>=24.0'}
 
-  '@interop/ecdsa-multikey@2.1.0':
-    resolution: {integrity: sha512-oZ1Jgc0+ljCbIiTkk+3za0u53zxJTF55b3/oD3uO84XufYh0CzoRTdPHOOeZVlKikRtPVRY1D/QWBO1kDnGwDA==}
+  '@interop/ecdsa-multikey@2.2.0':
+    resolution: {integrity: sha512-fZBzH4pF3rIFdUXRvHCkj1AgBNekasov3Q4avWzT2R9xkqvXDvOUrlRPF5s/0uQ1ZDNsyU6ql+95lY+EsUh2rA==}
     engines: {node: '>=24.0'}
 
   '@interop/ed25519-verification-key@7.0.2':
@@ -1197,6 +1201,8 @@ snapshots:
 
   '@interop/data-integrity-core@6.1.2': {}
 
+  '@interop/data-integrity-core@6.4.0': {}
+
   '@interop/did-io@4.0.2':
     dependencies:
       '@interop/data-integrity-core': 6.1.2
@@ -1211,9 +1217,9 @@ snapshots:
     transitivePeerDependencies:
       - react-native-get-random-values
 
-  '@interop/ecdsa-multikey@2.1.0':
+  '@interop/ecdsa-multikey@2.2.0':
     dependencies:
-      '@interop/data-integrity-core': 6.1.2
+      '@interop/data-integrity-core': 6.4.0
       '@scure/base': 2.2.0
 
   '@interop/ed25519-verification-key@7.0.2':

@@ -5,12 +5,11 @@ import { base58btc, base64url } from '../baseX.js'
 import { deriveSecret, generateEphemeralKeyPair } from './x25519-helper.js'
 import { createKek } from './aeskw.js'
 import { deriveKey } from './ecdhkdf.js'
+import type { IEPK, IKeyAgreementKey } from '@interop/data-integrity-core'
 import type {
-  Epk,
   EphemeralKeyPair,
-  KekFromEphemeralPeerResult,
-  KekFromStaticPeerResult,
-  KeyAgreementKey
+  KEKFromEphemeralPeerResult,
+  KEKFromStaticPeerResult
 } from '../types.js'
 
 const KEY_TYPE = 'X25519KeyAgreementKey2020'
@@ -27,9 +26,9 @@ export async function kekFromEphemeralPeer({
   keyAgreementKey,
   epk
 }: {
-  keyAgreementKey: KeyAgreementKey
-  epk: Epk
-}): Promise<KekFromEphemeralPeerResult> {
+  keyAgreementKey: IKeyAgreementKey
+  epk: IEPK
+}): Promise<KEKFromEphemeralPeerResult> {
   if (!(epk && typeof epk === 'object')) {
     throw new TypeError('"epk" must be an object.')
   }
@@ -82,7 +81,7 @@ export async function kekFromStaticPeer({
   ephemeralKeyPair: EphemeralKeyPair
 
   staticPublicKey: any
-}): Promise<KekFromStaticPeerResult> {
+}): Promise<KEKFromStaticPeerResult> {
   if (!staticPublicKey) {
     throw new Error('"staticPublicKey" is required.')
   }

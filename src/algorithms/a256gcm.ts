@@ -24,6 +24,7 @@ export async function generateKey(): Promise<Uint8Array> {
     true,
     ['encrypt']
   )
+  // `CryptoKey` is the Web Crypto API key type, sourced from the DOM lib.
   return new Uint8Array(await crypto.subtle.exportKey('raw', key as CryptoKey))
 }
 

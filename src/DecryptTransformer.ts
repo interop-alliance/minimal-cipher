@@ -6,13 +6,12 @@ import * as fipsAlgorithm from './algorithms/fips.js'
 import * as recAlgorithm from './algorithms/recommended.js'
 import { stringToUint8Array } from './util.js'
 import type {
-  CipherAlgorithm,
-  Epk,
-  JWE,
-  KeyAgreementAlgorithm,
-  KeyAgreementKey,
-  Recipient
-} from './types.js'
+  IEPK,
+  IJWE,
+  IKeyAgreementKey,
+  IRecipient
+} from '@interop/data-integrity-core'
+import type { CipherAlgorithm, KeyAgreementAlgorithm } from './types.js'
 
 // support `C20P` for backwards compatibility
 import * as c20p from './algorithms/c20p.js'
@@ -29,14 +28,14 @@ const KEY_ALGORITHM = 'ECDH-ES+A256KW'
 
 export class DecryptTransformer {
   keyAgreement: KeyAgreementAlgorithm
-  keyAgreementKey: KeyAgreementKey
+  keyAgreementKey: IKeyAgreementKey
 
   constructor({
     keyAgreement,
     keyAgreementKey
   }: {
     keyAgreement?: KeyAgreementAlgorithm
-    keyAgreementKey?: KeyAgreementKey
+    keyAgreementKey?: IKeyAgreementKey
   } = {}) {
     if (!keyAgreement) {
       throw new TypeError('"keyAgreement" is a required parameter.')
@@ -49,7 +48,7 @@ export class DecryptTransformer {
   }
 
   async transform(
-    chunk: { jwe: JWE },
+    chunk: { jwe: IJWE },
     controller: TransformStreamDefaultController
   ): Promise<void> {
     // assumes `chunk` is an object with a JWE under the `jwe` property
@@ -68,7 +67,7 @@ export class DecryptTransformer {
     controller.enqueue(data)
   }
 
-  async decrypt(jwe: JWE): Promise<Uint8Array | null> {
+  async decrypt(jwe: IJWE): Promise<Uint8Array | null> {
     // validate JWE
     if (!(jwe && typeof jwe === 'object')) {
       throw new TypeError('"jwe" must be an object.')
@@ -130,7 +129,7 @@ export class DecryptTransformer {
     const { keyAgreement } = this
     const { kek } = await keyAgreement.kekFromEphemeralPeer({
       keyAgreementKey,
-      epk: epk as Epk
+      epk: epk as IEPK
     })
     const cek = await kek.unwrapKey({ wrappedKey })
     if (!cek) {
@@ -151,9 +150,9 @@ export class DecryptTransformer {
 }
 
 function _findRecipient(
-  recipients: Recipient[],
-  key: KeyAgreementKey
-): Recipient | undefined {
+  recipients: IRecipient[],
+  key: IKeyAgreementKey
+): IRecipient | undefined {
   return recipients.find(
     e =>
       e.header &&

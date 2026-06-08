@@ -2,13 +2,14 @@
  * Copyright (c) 2019-2022 Digital Bazaar, Inc. All rights reserved.
  */
 import { base64url } from './baseX.js'
-import type { CipherAlgorithm, JWE, Recipient } from './types.js'
+import type { IJWE, IRecipient } from '@interop/data-integrity-core'
+import type { CipherAlgorithm } from './types.js'
 
 // 1 MiB = 1048576
 const DEFAULT_CHUNK_SIZE = 1048576
 
 interface EncryptTransformerOptions {
-  recipients: Recipient[]
+  recipients: IRecipient[]
   encodedProtectedHeader: string
   cipher: CipherAlgorithm
   additionalData: Uint8Array
@@ -17,7 +18,7 @@ interface EncryptTransformerOptions {
 }
 
 export class EncryptTransformer {
-  recipients: Recipient[]
+  recipients: IRecipient[]
   encodedProtectedHeader: string
   cipher: CipherAlgorithm
   additionalData: Uint8Array
@@ -108,7 +109,7 @@ export class EncryptTransformer {
     })
   }
 
-  async encrypt(data: Uint8Array): Promise<JWE> {
+  async encrypt(data: Uint8Array): Promise<IJWE> {
     const { cipher, additionalData, cek } = this
     const { ciphertext, iv, tag } = await cipher.encrypt({
       data,
@@ -117,7 +118,7 @@ export class EncryptTransformer {
     })
 
     // represent encrypted data as JWE
-    const jwe: JWE = {
+    const jwe: IJWE = {
       protected: this.encodedProtectedHeader,
       recipients: this.recipients,
       iv: base64url.encode(iv),

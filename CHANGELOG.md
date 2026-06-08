@@ -6,6 +6,8 @@
 
 - **Infrastructure only; no changes to library behavior, public API, or return
   shapes.**
+- Fork to `@interop/minimal-cipher` (renamed from `@digitalbazaar/minimal-cipher`);
+  repository moved to `interop-alliance/minimal-cipher`.
 - Convert the source from JavaScript to TypeScript (now built with `tsc` to
   `dist/`, with emitted type declarations).
 - Align tooling with the isomorphic-lib-template: `pnpm` (with

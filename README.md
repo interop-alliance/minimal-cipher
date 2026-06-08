@@ -1,4 +1,4 @@
-# Minimal Cipher _(@digitalbazaar/minimal-cipher)_
+# Minimal Cipher _(@interop/minimal-cipher)_
 
 Minimal encryption/decryption [JWE](https://tools.ietf.org/html/rfc7516)
 library, secure algs only, browser-compatible.
@@ -50,16 +50,16 @@ with this software.
 
 To install from NPM:
 
-https://www.npmjs.com/package/@digitalbazaar/minimal-cipher
+https://www.npmjs.com/package/@interop/minimal-cipher
 
 ```sh
-npm install @digitalbazaar/minimal-cipher
+npm install @interop/minimal-cipher
 ```
 
 To install locally (for development):
 
 ```sh
-git clone https://github.com/digitalbazaar/minimal-cipher.git
+git clone https://github.com/interop-alliance/minimal-cipher.git
 cd minimal-cipher
 pnpm install
 ```
@@ -78,7 +78,7 @@ pnpm run test:browser  # run the browser smoke test (playwright)
 Pick a Cipher interface (`recommended` or `fips`) and create an instance:
 
 ```js
-import { Cipher } from '@digitalbazaar/minimal-cipher'
+import { Cipher } from '@interop/minimal-cipher'
 
 const cipher = new Cipher() // by default {version: 'recommended'}
 ```

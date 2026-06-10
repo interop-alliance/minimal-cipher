@@ -1,5 +1,12 @@
 # minimal-cipher ChangeLog
 
+## 7.2.0 -
+
+### Changed
+
+- Update to latest `@interop/data-integrity-core` and `@interop/ecdsa-multikey`
+  dependencies.
+
 ## 7.1.0 - 2026-06-08
 
 ### Changed

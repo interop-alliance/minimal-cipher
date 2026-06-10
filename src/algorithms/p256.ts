@@ -3,7 +3,7 @@
  */
 import { base64url } from '../baseX.js'
 import * as EcdsaMultikey from '@interop/ecdsa-multikey'
-import type { JWK, KeyPairInterface } from '@interop/ecdsa-multikey'
+import type { JWK, IECDSAKeyPair } from '@interop/ecdsa-multikey'
 import type {
   IEPK,
   IKeyAgreementKey,
@@ -135,7 +135,7 @@ async function _deriveSecret({
 }: {
   ephemeralKeyPair: EphemeralKeyPair
 
-  remotePublicKey: KeyPairInterface
+  remotePublicKey: IECDSAKeyPair
 }): Promise<Uint8Array> {
   const jwk = { ...ephemeralKeyPair.epk }
   jwk.key_ops = ['deriveBits']

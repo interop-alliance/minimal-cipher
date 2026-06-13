@@ -11,7 +11,8 @@ import type {
   IJWE,
   IKeyAgreementKey,
   IKeyResolver,
-  IRecipient
+  IRecipient,
+  IRecipientTemplate
 } from '@interop/data-integrity-core'
 import type {
   CipherAlgorithm,
@@ -23,18 +24,18 @@ const VERSIONS = ['recommended', 'fips']
 
 interface EncryptOptions {
   data?: Uint8Array | string
-  recipients: IRecipient[]
+  recipients: IRecipientTemplate[]
   keyResolver: IKeyResolver
 }
 
 interface EncryptObjectOptions {
   obj: object
-  recipients: IRecipient[]
+  recipients: IRecipientTemplate[]
   keyResolver: IKeyResolver
 }
 
 interface CreateEncryptOptions {
-  recipients: IRecipient[]
+  recipients: IRecipientTemplate[]
   keyResolver: IKeyResolver
   chunkSize?: number
 }
@@ -292,7 +293,7 @@ export class Cipher {
     // derive ephemeral ECDH key pair to use with all recipients
     const ephemeralKeyPair = await keyAgreement.generateEphemeralKeyPair()
 
-    recipients = await Promise.all(
+    const wrappedRecipients = await Promise.all(
       recipients.map(recipient =>
         this._createRecipient({ recipient, cek, ephemeralKeyPair, keyResolver })
       )
@@ -309,7 +310,7 @@ export class Cipher {
     const additionalData = stringToUint8Array(encodedProtectedHeader)
 
     return new EncryptTransformer({
-      recipients,
+      recipients: wrappedRecipients,
       encodedProtectedHeader,
       cipher,
       additionalData,
@@ -358,7 +359,7 @@ export class Cipher {
     cek,
     keyResolver
   }: {
-    recipient: IRecipient
+    recipient: IRecipientTemplate
     ephemeralKeyPair: EphemeralKeyPair
     cek: Uint8Array
     keyResolver: IKeyResolver

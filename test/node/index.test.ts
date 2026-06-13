@@ -150,13 +150,14 @@ describe('minimal-cipher', function () {
           keyAgreementKey
         })
         const readable = stream.pipeThrough(decryptStream)
-        const reader = readable.getReader()
+        const reader =
+          readable.getReader() as ReadableStreamDefaultReader<Uint8Array>
         let data = new Uint8Array(0)
-        let value
+        let value: Uint8Array | undefined
         let done = false
         while (!done) {
           ;({ value, done } = await reader.read())
-          if (!done) {
+          if (!done && value) {
             // create a new array with the new length
             const next = new Uint8Array(data.length + value.length)
             // set the first values to the existing chunk

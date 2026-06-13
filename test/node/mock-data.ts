@@ -1,8 +1,8 @@
-import type { JWE } from '../../src/types.js'
+import type { IJWE } from '@interop/data-integrity-core'
 
 // `C20P` encrypted legacy JWE; backwards compatible support for decrypting
 // this is in this library (but cannot encrypt using it)
-export const LEGACY_JWE: JWE = {
+export const LEGACY_JWE: IJWE = {
   protected: 'eyJlbmMiOiJBMjU2R0NNIn0',
   recipients: [
     {

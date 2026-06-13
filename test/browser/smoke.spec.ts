@@ -13,9 +13,14 @@ test('recommended cipher round-trips in the browser', async ({ page }) => {
   await page.goto('/test/index.html')
 
   const roundTripped = await page.evaluate(async () => {
+    // These specifiers are vite-served source URLs resolved at runtime in the
+    // browser, not modules tsc can resolve at type-check time.
+    // @ts-expect-error -- runtime-only vite-served path
     const { Cipher } = await import('/src/index.ts')
+    // @ts-expect-error -- runtime-only vite-served path
     const x25519 = await import('/src/algorithms/x25519.js')
     // resolves to x25519-helper-browser via the vite alias
+    // @ts-expect-error -- runtime-only vite-served path
     const helper = await import('/src/algorithms/x25519-helper.js')
 
     // build a minimal in-browser X25519 key agreement key

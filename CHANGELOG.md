@@ -1,5 +1,19 @@
 # minimal-cipher ChangeLog
 
+## 7.3.0 - TBD
+
+### Changed
+
+- Type pre-encryption recipient inputs as `IRecipientTemplate` (from
+  `@interop/data-integrity-core`) rather than `IRecipient`, reflecting that the
+  `encrypted_key` is wrapped during encryption: the `encrypt`/`encryptObject`/
+  `createEncryptTransformer` options and `_createRecipient`'s input now use the
+  template type, while the recipients written into the resulting JWE remain
+  `IRecipient`. The public `Cipher` API is structurally unchanged -- callers
+  still pass recipients as `{ header: { kid, alg } }`.
+- Updated to `@interop/data-integrity-core@^8.0.0` and
+  `@interop/x25519-key-agreement-key@^5.0.0`.
+
 ## 7.2.0 - 2026-06-10
 
 ### Changed

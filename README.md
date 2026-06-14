@@ -84,7 +84,24 @@ Pick a Cipher interface (`recommended` or `fips`) and create an instance:
 import { Cipher } from '@interop/minimal-cipher'
 
 const cipher = new Cipher() // by default {version: 'recommended'}
+
+// or, to use FIPS-validated algorithms:
+const fipsCipher = new Cipher({ version: 'fips' })
 ```
+
+Both versions produce the same JWE envelope structure -- ECDH-ES key agreement
+that wraps the content encryption key (CEK) with AES Key Wrap (`A256KW`) -- and
+differ only in the content-encryption cipher and the key-agreement curve:
+
+| Version       | Content encryption (`enc`)   | Key agreement | Notes                                             |
+| ------------- | ---------------------------- | ------------- | ------------------------------------------------- |
+| `recommended` | `XC20P` (XChaCha20-Poly1305) | X25519        | Default. Modern, fast; not on the NIST/FIPS list. |
+| `fips`        | `A256GCM` (AES-256-GCM)      | NIST P-256    | Uses only FIPS 140-validated algorithms.          |
+
+Use `recommended` (the default) unless you have a specific FIPS requirement, in
+which case use `fips`. Note that `version` controls the algorithms used to
+**encrypt**, so it must match the kind of key agreement keys your recipients
+have: X25519 keys for `recommended`, P-256 keys for `fips`.
 
 ### Encrypting
 
@@ -198,11 +215,12 @@ const jweDoc = await cipher.encrypt({ data, recipients, keyResolver })
 
 ### Streaming encryption
 
-`encrypt()` buffers the whole input in memory and produces a single JWE, which is
-fine for small payloads. For large blobs or files, use the streaming API instead:
-`createEncryptStream()` returns a WHATWG [`TransformStream`][Streams API] that
-breaks the incoming data into chunks (default `chunkSize` of 1 MiB) and emits one
-`{ jwe }` object per chunk, so the data is never fully held in memory.
+`encrypt()` buffers the whole input in memory and produces a single JWE, which
+is fine for small payloads. For large blobs or files, use the streaming API
+instead: `createEncryptStream()` returns a WHATWG
+[`TransformStream`][Streams API] that breaks the incoming data into chunks
+(default `chunkSize` of 1 MiB) and emits one `{ jwe }` object per chunk, so the
+data is never fully held in memory.
 
 ```js
 // `stream` is a WHATWG ReadableStream of Uint8Array chunks
@@ -228,6 +246,47 @@ while (!done) {
 This is how [`edv-client`](https://github.com/digitalbazaar/edv-client) encrypts
 large documents: it pipes a user-supplied `ReadableStream` through
 `createEncryptStream()` and stores each emitted `jwe` as a separate chunk.
+
+### Encrypting with the FIPS version
+
+The examples above use the default `recommended` version, whose key agreement
+keys are X25519. To encrypt with FIPS-validated algorithms, construct the cipher
+with `{ version: 'fips' }` and use NIST P-256 key agreement keys. Everything
+else -- the `recipients` array, `keyResolver`, and the `encrypt*` calls -- works
+the same way.
+
+```js
+import { Cipher } from '@interop/minimal-cipher'
+import * as EcdsaMultikey from '@interop/ecdsa-multikey'
+
+const cipher = new Cipher({ version: 'fips' })
+
+// Generate (or load) a P-256 key agreement key for each recipient
+const keyAgreementKey = await EcdsaMultikey.generate({
+  id: 'urn:123',
+  curve: 'P-256',
+  keyAgreement: true
+})
+
+// The recipient header is the same shape as the recommended version
+const recipients = [
+  { header: { kid: keyAgreementKey.id, alg: 'ECDH-ES+A256KW' } }
+]
+
+// `keyResolver` resolves each `kid` to the recipient's P-256 public key
+const publicKeyNode = await keyAgreementKey.export({ publicKey: true })
+const keyResolver = async () => publicKeyNode
+
+const obj = { key: 'value' }
+const jweDoc = await cipher.encryptObject({ obj, recipients, keyResolver })
+```
+
+To decrypt, pass the P-256 key agreement key (which can derive the shared
+secret) as `keyAgreementKey`, exactly as with the recommended version:
+
+```js
+const object = await cipher.decryptObject({ jwe: jweDoc, keyAgreementKey })
+```
 
 ### Decrypting
 

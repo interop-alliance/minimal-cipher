@@ -8,17 +8,12 @@ library, secure algs only, browser-compatible.
 
 ## Table of Contents
 
-- [Security](#security)
 - [Background](#background)
 - [Install](#install)
 - [Usage](#usage)
 - [Contribute](#contribute)
 - [Commercial Support](#commercial-support)
 - [License](#license)
-
-## Security
-
-TBD
 
 ## Background
 
@@ -114,7 +109,7 @@ you will need:
 (You'll also need a `keyResolver`, more about that later.)
 
 First, assemble your Key Agreement public keys (you'll be encrypting with them,
-and the intended recipient will use the co rresponding private keys to decrypt).
+and the intended recipient will use the corresponding private keys to decrypt).
 
 Put together a list of `recipients` (essentially, you're listing the `id`s of
 public/private key pairs that will be used to encrypt/decrypt the message):
@@ -124,11 +119,11 @@ public/private key pairs that will be used to encrypt/decrypt the message):
 const keyAgreementKey = await fetchFromSomewhere()
 
 // or derive them from an existing Ed25519 signing key
-import { X25519KeyAgreementKey2020 } from '@digitalbazaar/x25519-key-agreement-key-2020'
-import { Ed25519VerificationKey2020 } from '@digitalbazaar/ed25519-verification-key-2020'
-const keyPair = await Ed25519VerificationKey2020.generate()
+import { X25519KeyAgreementKey2020 } from '@interop/x25519-key-agreement-key'
+import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
+const keyPair = await Ed25519VerificationKey.generate()
 
-const keyAgreementKey = X25519KeyPair.fromEd25519VerificationKey2020({
+const keyAgreementKey = X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({
   keyPair
 })
 // If the source key pair didn't have a controller set, don't forget to set one:
@@ -140,8 +135,10 @@ const didDoc = await veresDriver.get({ did })
 const authnKey = didDoc.getVerificationMethod({
   proofPurpose: 'authentication'
 })
-const edKeyPair = await Ed25519VerificationKey2020.from(authnKey)
-const keyPair = X25519KeyPair.fromEd25519VerificationKey2020({ keyPair })
+const edKeyPair = await Ed25519VerificationKey.from(authnKey)
+const keyAgreementKey = X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({
+  keyPair: edKeyPair
+})
 
 const recipient = {
   header: {
@@ -174,21 +171,31 @@ const keyResolver = async () => publicKeyNode
 // A more advanced resolver based on DID doc authentication keys
 const keyResolver = async ({ id }) => {
   // Use veres driver to fetch the authn key directly
-  const keyPair = await Ed25519VerificationKey2020.from(
+  const keyPair = await Ed25519VerificationKey.from(
     await veresDriver.get({ did: id })
   )
   // Convert authn key to key agreement key
-  return X25519KeyPair.fromEd25519VerificationKey2020({ keyPair })
+  return X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({ keyPair })
 }
 ```
 
 ```js
-// Using did-veres-one driver as a resolver for did:v1:nym: DID keys
-// TODO: Implement this
-```
-
-```js
 // Using the did:key method driver as a key resolver
+import { driver } from '@interop/did-method-key'
+import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
+
+const didKeyDriver = driver()
+// Register Ed25519 keys, and derive an X25519 keyAgreement key when resolving
+// (did:key identities are Ed25519 signing keys; encryption needs the derived
+// X25519 key agreement key)
+didKeyDriver.use({
+  keyPairClass: Ed25519VerificationKey,
+  enableEncryptionKeyDerivation: true
+})
+
+// The resolver is called with a key agreement key id (a did:key URL with a
+// fragment) and returns the matching public key node
+const keyResolver = async ({ id }) => didKeyDriver.get({ url: id })
 ```
 
 #### Shortcut: `createRecipients`

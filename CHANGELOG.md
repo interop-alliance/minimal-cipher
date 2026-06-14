@@ -1,5 +1,18 @@
 # minimal-cipher ChangeLog
 
+## Unreleased - TBD
+
+### Added
+
+- `Cipher.prototype.createRecipients({ keys })` -- builds the `recipients` array
+  and a matching `keyResolver` from a set of recipient key-agreement keys, for
+  use with `encrypt`/`encryptObject` (and the stream/transformer variants).
+  Saves callers from assembling the recipient headers and a by-id resolver by
+  hand. Each key needs an `id` (used as the recipient `kid`) and the public key
+  material the key agreement algorithm reads (e.g. an
+  `X25519KeyAgreementKey2020` instance); the header `alg` is taken from the
+  cipher's key agreement algorithm so it always matches the version.
+
 ## 7.3.0 - 2026-06-13
 
 ### Changed

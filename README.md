@@ -186,6 +186,49 @@ const obj = { key: 'value' }
 const jweDoc = await cipher.encryptObject({ obj, recipients, keyResolver })
 ```
 
+To encrypt a binary blob, pass the bytes directly as a `Uint8Array`. There is no
+need to text-encode the data first -- a `Uint8Array` is passed through to the
+content-encryption step as-is, while a string is UTF-8 encoded for you:
+
+```js
+// To encrypt a binary blob
+const data = new Uint8Array(await blob.arrayBuffer()) // e.g. from a browser Blob
+const jweDoc = await cipher.encrypt({ data, recipients, keyResolver })
+```
+
+### Streaming encryption
+
+`encrypt()` buffers the whole input in memory and produces a single JWE, which is
+fine for small payloads. For large blobs or files, use the streaming API instead:
+`createEncryptStream()` returns a WHATWG [`TransformStream`][Streams API] that
+breaks the incoming data into chunks (default `chunkSize` of 1 MiB) and emits one
+`{ jwe }` object per chunk, so the data is never fully held in memory.
+
+```js
+// `stream` is a WHATWG ReadableStream of Uint8Array chunks
+const encryptStream = await cipher.createEncryptStream({
+  recipients,
+  keyResolver,
+  chunkSize: 1048576 // optional; bytes per chunk, defaults to 1 MiB
+})
+
+// Each chunk read from the resulting stream is an object: { jwe }
+const readable = stream.pipeThrough(encryptStream)
+const reader = readable.getReader()
+let done
+let value
+while (!done) {
+  ;({ value, done } = await reader.read())
+  if (value) {
+    // store or upload value.jwe ...
+  }
+}
+```
+
+This is how [`edv-client`](https://github.com/digitalbazaar/edv-client) encrypts
+large documents: it pipes a user-supplied `ReadableStream` through
+`createEncryptStream()` and stores each emitted `jwe` as a separate chunk.
+
 ### Decrypting
 
 Decrypt a JWE JSON Document, using a private `keyAgreementKey`:
@@ -196,8 +239,58 @@ const data = await cipher.decrypt({ jwe, keyAgreementKey })
 const object = await cipher.decryptObject({ jwe, keyAgreementKey })
 ```
 
-TODO: Describe the required KEK API: // `id`, `algorithm`,
-`wrapKey({unwrappedKey})`, and `unwrapKey({wrappedKey})`
+To decrypt streamed (chunked) data, use `createDecryptStream()`. It returns a
+[`TransformStream`][Streams API] that takes `{ jwe }` chunks (as produced by
+`createEncryptStream()`) and outputs the decrypted `Uint8Array` chunks:
+
+```js
+// `stream` is a ReadableStream of { jwe } chunks
+const decryptStream = await cipher.createDecryptStream({ keyAgreementKey })
+const readable = stream.pipeThrough(decryptStream)
+const reader = readable.getReader()
+let done
+let value
+while (!done) {
+  ;({ value, done } = await reader.read())
+  if (value) {
+    // value is a Uint8Array of decrypted bytes ...
+  }
+}
+```
+
+### Key wrapping (the KEK interface)
+
+Encryption uses two layers of keys. A randomly generated **content encryption
+key (CEK)** encrypts the payload (with `A256GCM` or `XC20P`). That CEK is then
+wrapped, once per recipient, by a **key encryption key (KEK)**, and the wrapped
+result is stored as each recipient's `encrypted_key`. Decryption reverses this:
+the KEK unwraps the CEK, which then decrypts the payload.
+
+You do not construct or pass a KEK yourself. Because the cipher uses ECDH-ES key
+agreement, each KEK is derived internally, per recipient, from a shared secret
+between an ephemeral key and a recipient's static key agreement key. The
+recipient is identified in the JWE by its key agreement key id (the `kid` in the
+recipient header), which `keyResolver` maps to a public key -- the KEK itself is
+ephemeral and has no identity of its own.
+
+A KEK object implements the following interface:
+
+```ts
+interface KEK {
+  // The key-wrapping algorithm, e.g. { name: 'A256KW' }.
+  algorithm: { name: string }
+
+  // Wraps the CEK bytes; resolves to the base64url-encoded wrapped key.
+  wrapKey(options: { unwrappedKey: Uint8Array }): Promise<string>
+
+  // Unwraps a base64url-encoded wrapped key; resolves to the CEK bytes,
+  // or null if unwrapping fails (e.g. this KEK does not match the recipient).
+  unwrapKey(options: { wrappedKey: string }): Promise<Uint8Array | null>
+}
+```
+
+The built-in implementation wraps the CEK with AES Key Wrap (`A256KW`) using the
+Web Crypto API; see `src/algorithms/aeskw.ts`.
 
 ## Contribute
 

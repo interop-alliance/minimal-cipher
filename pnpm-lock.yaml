@@ -40,8 +40,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       '@interop/x25519-key-agreement-key':
-        specifier: ^5.0.0
-        version: 5.0.0
+        specifier: ^5.1.0
+        version: 5.1.0
       '@playwright/test':
         specifier: ^1.60.0
         version: 1.60.0
@@ -210,8 +210,8 @@ packages:
     resolution: {integrity: sha512-6c8dnoQNIiL25Q4YovC1a44mREO1lzW3F/lmvdwbAMMbhtGGRoQeqo1H4diwNhBzaxRrUMXrAIwbM26POmI/Yg==}
     engines: {node: '>=24.0'}
 
-  '@interop/x25519-key-agreement-key@5.0.0':
-    resolution: {integrity: sha512-dFwxZGuaZLKg4IcZB8Jd4Qun3+NsXBUs0sU/a+EeQqsTqHIamjcww+9Gnkpu3pA1Zz5yAj75RvNl/QN7IeWO6g==}
+  '@interop/x25519-key-agreement-key@5.1.0':
+    resolution: {integrity: sha512-XVTgLse3v/DM+kjPCHQPpH7KEODVJp3VanYv5QQC+fSKoxDrANsl/oeNV/Eh9HUSvII/sg2t6hxILlwmFgh2xQ==}
     engines: {node: '>=24.0'}
 
   '@jridgewell/resolve-uri@3.1.2':
@@ -1233,7 +1233,7 @@ snapshots:
     dependencies:
       lru-cache: 11.5.1
 
-  '@interop/x25519-key-agreement-key@5.0.0':
+  '@interop/x25519-key-agreement-key@5.1.0':
     dependencies:
       '@interop/data-integrity-core': 8.0.0
       '@noble/curves': 2.2.0

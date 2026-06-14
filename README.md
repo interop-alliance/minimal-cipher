@@ -114,7 +114,7 @@ you will need:
 (You'll also need a `keyResolver`, more about that later.)
 
 First, assemble your Key Agreement public keys (you'll be encrypting with them,
-and the intended recipient will use the corresponding private keys to decrypt).
+and the intended recipient will use the co rresponding private keys to decrypt).
 
 Put together a list of `recipients` (essentially, you're listing the `id`s of
 public/private key pairs that will be used to encrypt/decrypt the message):
@@ -189,6 +189,21 @@ const keyResolver = async ({ id }) => {
 
 ```js
 // Using the did:key method driver as a key resolver
+```
+
+#### Shortcut: `createRecipients`
+
+If you already hold the recipient key-agreement keys (each with an `id` and the
+public key material the algorithm reads, e.g. `X25519KeyAgreementKey2020`
+instances), `cipher.createRecipients({ keys })` builds both the `recipients`
+array and a matching by-id `keyResolver` for you -- no need to assemble the
+headers or write a resolver. The header `alg` is taken from the cipher's key
+agreement algorithm, so it always matches the version:
+
+```js
+const keys = [aliceKeyAgreementKey, bobKeyAgreementKey]
+const { recipients, keyResolver } = cipher.createRecipients({ keys })
+const jweDoc = await cipher.encryptObject({ obj, recipients, keyResolver })
 ```
 
 Create the JWE:

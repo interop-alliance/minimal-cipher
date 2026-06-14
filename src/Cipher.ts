@@ -75,6 +75,46 @@ export class Cipher {
   }
 
   /**
+   * Builds the `recipients` array and a matching `keyResolver` from a set of
+   * recipient key-agreement keys, for use with `encrypt`/`encryptObject` (and
+   * the stream/transformer variants). Saves callers from assembling the
+   * recipient headers and a by-id resolver by hand.
+   *
+   * Each key must expose an `id` (used as the JWE recipient `kid`) and the
+   * public key material the key agreement algorithm reads -- for X25519, a
+   * `publicKeyMultibase` (e.g. an `X25519KeyAgreementKey2020` instance or its
+   * exported public key). The recipient header `alg` is taken from this
+   * cipher's key agreement algorithm (`this.keyAgreement.JWE_ALG`), so it
+   * always matches the cipher version. The returned `keyResolver` looks a
+   * recipient up by `id` and throws when asked for an unknown key.
+   *
+   * @param {object} options - Options.
+   * @param {Array} options.keys - Recipient key-agreement keys, each with an
+   *   `id` and the public key material the algorithm reads.
+   *
+   * @returns {{recipients: IRecipientTemplate[], keyResolver: IKeyResolver}}
+   *   The `recipients` array and the `keyResolver` to pass to `encrypt`.
+   */
+  createRecipients({ keys }: { keys: { id: string }[] }): {
+    recipients: IRecipientTemplate[]
+    keyResolver: IKeyResolver
+  } {
+    const alg = this.keyAgreement.JWE_ALG
+    const byId = new Map(keys.map(key => [key.id, key]))
+    const recipients: IRecipientTemplate[] = keys.map(key => ({
+      header: { kid: key.id, alg }
+    }))
+    const keyResolver: IKeyResolver = async ({ id }) => {
+      const key = id ? byId.get(id) : undefined
+      if (!key) {
+        throw new Error(`No public key for recipient "${id}".`)
+      }
+      return key
+    }
+    return { recipients, keyResolver }
+  }
+
+  /**
    * Creates a TransformStream that will encrypt some data for one or more
    * recipients and output a stream of chunks, each containing an object
    * with the property `jwe` with a JWE value.

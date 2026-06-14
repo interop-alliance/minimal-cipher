@@ -259,6 +259,46 @@ describe('minimal-cipher', function () {
         isRecipient({ recipients: result.recipients, kak: secondKak })
       })
 
+      it('createRecipients() builds recipients + keyResolver for a round-trip', async function () {
+        const obj = { simple: true }
+        const secondKak = await Kak.generate({ id: 'urn:recipient2' })
+        const keys = [await testKak.export(), await secondKak.export()]
+        const { recipients, keyResolver: resolver } = cipher.createRecipients({
+          keys
+        })
+
+        // one recipient header per key, with the cipher's key agreement alg
+        expect(recipients).toHaveLength(2)
+        expect(recipients[0].header.kid).toBe(testKak.id)
+        expect(recipients[0].header.alg).toBe(cipher.keyAgreement.JWE_ALG)
+
+        const jwe = await cipher.encryptObject({
+          obj,
+          recipients,
+          keyResolver: resolver
+        })
+        expectJWE(jwe)
+        isRecipient({ recipients: jwe.recipients, kak: testKak })
+        isRecipient({ recipients: jwe.recipients, kak: secondKak })
+
+        // each recipient key can decrypt
+        expect(
+          await cipher.decryptObject({ jwe, keyAgreementKey: testKak })
+        ).toEqual(obj)
+        expect(
+          await cipher.decryptObject({ jwe, keyAgreementKey: secondKak })
+        ).toEqual(obj)
+      })
+
+      it('createRecipients() keyResolver throws for an unknown recipient', async function () {
+        const { keyResolver: resolver } = cipher.createRecipients({
+          keys: [await testKak.export()]
+        })
+        await expect(resolver({ id: 'urn:nope' })).rejects.toThrow(
+          'No public key for recipient'
+        )
+      })
+
       it('should encrypt a stream', async function () {
         const data = getRandomUint8()
         const chunks = await encryptStream({ data })

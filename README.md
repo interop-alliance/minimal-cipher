@@ -123,9 +123,10 @@ import { X25519KeyAgreementKey2020 } from '@interop/x25519-key-agreement-key'
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 const keyPair = await Ed25519VerificationKey.generate()
 
-const keyAgreementKey = X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({
-  keyPair
-})
+const keyAgreementKey =
+  X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({
+    keyPair
+  })
 // If the source key pair didn't have a controller set, don't forget to set one:
 keyAgreementKey.controller = did // The controller's DID
 keyAgreementKey.id = `${did}#${keyAgreementKey.fingerprint()}`
@@ -136,9 +137,10 @@ const authnKey = didDoc.getVerificationMethod({
   proofPurpose: 'authentication'
 })
 const edKeyPair = await Ed25519VerificationKey.from(authnKey)
-const keyAgreementKey = X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({
-  keyPair: edKeyPair
-})
+const keyAgreementKey =
+  X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({
+    keyPair: edKeyPair
+  })
 
 const recipient = {
   header: {

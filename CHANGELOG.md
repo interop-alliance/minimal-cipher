@@ -1,5 +1,21 @@
 # minimal-cipher ChangeLog
 
+## Unreleased - TBD
+
+### Added
+
+- Pure-JS RFC 3394 AES Key Wrap (A256KW) fallback in `src/algorithms/aeskw.ts`,
+  for runtimes such as React Native / Hermes whose WebCrypto shim provides only
+  `subtle.digest` and lacks the key-wrap ops (`importKey`, `wrapKey`,
+  `unwrapKey`, `exportKey`). `createKek` now feature-detects the WebCrypto
+  key-wrap subset and, when it is unavailable, selects a `@noble/ciphers`
+  `aeskw` backend. The fallback produces byte-identical wrapped output to
+  WebCrypto `AES-KW` (default IV `A6A6A6A6A6A6A6A6`), so content-addressed JWE
+  envelopes round-trip across browser and React Native wallets. When the
+  WebCrypto key-wrap ops are available (browser, Node >= 24), the existing
+  WebCrypto path is used unchanged.
+- `@noble/ciphers` added to `dependencies`.
+
 ## 7.4.1 - 2026-06-28
 
 ### Changed

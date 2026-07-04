@@ -42,6 +42,7 @@
   "dependencies": {
     "@interop/data-integrity-core": "^8.1.0",
     "@interop/ecdsa-multikey": "^2.3.2",
+    "@noble/ciphers": "^2.2.0",
     "@noble/curves": "^2.2.0",
     "@scure/base": "^2.2.0",
     "@stablelib/chacha": "^2.0.1",

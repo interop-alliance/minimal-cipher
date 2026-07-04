@@ -3,8 +3,8 @@
 [![Node.js CI](https://github.com/interop-alliance/minimal-cipher/workflows/CI/badge.svg)](https://github.com/interop-alliance/minimal-cipher/actions?query=workflow%3A%22CI%22)
 [![NPM Version](https://img.shields.io/npm/v/@interop/minimal-cipher.svg)](https://npm.im/@interop/minimal-cipher)
 
-Minimal encryption/decryption [JWE](https://tools.ietf.org/html/rfc7516)
-library, secure algs only, browser-compatible.
+> Minimal TypeScript/JS encryption/decryption [JWE](https://tools.ietf.org/html/rfc7516)
+library, secure algs only, for Node.js, browsers and React Native.
 
 ## Table of Contents
 

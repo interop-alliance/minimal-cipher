@@ -1,5 +1,12 @@
 # minimal-cipher ChangeLog
 
+## 7.5.1 -
+
+### Changed
+
+- Update to latest `@interop/data-integrity-core@8.2.0` and `x25519-key-agreement-key`
+  dependencies.
+
 ## 7.5.0 - 2026-07-04
 
 ### Added

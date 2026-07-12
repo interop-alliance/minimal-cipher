@@ -1,5 +1,16 @@
 # minimal-cipher ChangeLog
 
+## 7.6.0 - TBD
+
+### Added
+
+- `./algorithms` subpath export (`@interop/minimal-cipher/algorithms`),
+  exposing the low-level `ECDH-ES+A256KW` building blocks: `deriveKey` (the
+  RFC 7518 Concat KDF) and `createKek` (the A256KW key-encryption key, with
+  the WebCrypto / pure-JS backend selection), plus the `KEK` interface type.
+  For callers that wrap/unwrap keys compatibly with `Cipher` without going
+  through a full JWE envelope.
+
 ## 7.5.1 - 2026-07-10
 
 ### Changed

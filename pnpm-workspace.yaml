@@ -1,3 +1,2 @@
 minimumReleaseAgeExclude:
-  - '@interop/data-integrity-core@8.2.0'
-  - '@interop/x25519-key-agreement-key@5.1.2'
+  - '@interop/x25519-key-agreement-key@5.2.0'

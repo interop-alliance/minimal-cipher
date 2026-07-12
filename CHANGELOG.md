@@ -1,5 +1,11 @@
 # minimal-cipher ChangeLog
 
+## 7.6.1 -
+
+### Changed
+
+- Update to latest `x25519-key-agreement-key@5.2.0` dependency.
+
 ## 7.6.0 - 2026-07-11
 
 ### Added

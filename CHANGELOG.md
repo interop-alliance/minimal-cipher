@@ -1,5 +1,11 @@
 # minimal-cipher ChangeLog
 
+## 7.6.2 - 2026-07
+
+### Changed
+
+- Update to latest `@interop/data-integrity-core@8.3.0` and related.
+
 ## 7.6.1 - 2026-07-11
 
 ### Changed
@@ -10,18 +16,18 @@
 
 ### Added
 
-- `./algorithms` subpath export (`@interop/minimal-cipher/algorithms`),
-  exposing the low-level `ECDH-ES+A256KW` building blocks: `deriveKey` (the
-  RFC 7518 Concat KDF) and `createKek` (the A256KW key-encryption key, with
-  the WebCrypto / pure-JS backend selection). For callers that wrap/unwrap
-  keys compatibly with `Cipher` without going through a full JWE envelope.
+- `./algorithms` subpath export (`@interop/minimal-cipher/algorithms`), exposing
+  the low-level `ECDH-ES+A256KW` building blocks: `deriveKey` (the RFC 7518
+  Concat KDF) and `createKek` (the A256KW key-encryption key, with the WebCrypto
+  / pure-JS backend selection). For callers that wrap/unwrap keys compatibly
+  with `Cipher` without going through a full JWE envelope.
 
 ## 7.5.1 - 2026-07-10
 
 ### Changed
 
-- Update to latest `@interop/data-integrity-core@8.2.0` and `x25519-key-agreement-key`
-  dependencies.
+- Update to latest `@interop/data-integrity-core@8.2.0` and
+  `x25519-key-agreement-key` dependencies.
 
 ## 7.5.0 - 2026-07-04
 

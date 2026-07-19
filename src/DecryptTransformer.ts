@@ -5,6 +5,7 @@ import { base64url } from './baseX.js'
 import * as fipsAlgorithm from './algorithms/fips.js'
 import * as recAlgorithm from './algorithms/recommended.js'
 import { stringToUint8Array } from './util.js'
+import { KeyMissError } from './errors.js'
 import type {
   IEPK,
   IJWE,
@@ -113,7 +114,9 @@ export class DecryptTransformer {
     const { keyAgreementKey } = this
     const recipient = _findRecipient(jwe.recipients, keyAgreementKey)
     if (!recipient) {
-      throw new Error('No matching recipient found for key agreement key.')
+      throw new KeyMissError(
+        'No matching recipient found for key agreement key.'
+      )
     }
     // get wrapped CEK
     const { encrypted_key: wrappedKey } = recipient

@@ -1,5 +1,15 @@
 # minimal-cipher ChangeLog
 
+## 7.7.0 - TBD
+
+### Added
+
+- `KeyMissError` (exported from the package root): a typed error thrown when a
+  key does not open a given JWE envelope because it does not match any recipient
+  (wrong or rotated key), as opposed to envelope corruption. Decryption now
+  throws `KeyMissError` instead of a plain `Error` when no matching recipient is
+  found for the key agreement key; the message text is unchanged.
+
 ## 7.6.2 - 2026-07-17
 
 ### Changed

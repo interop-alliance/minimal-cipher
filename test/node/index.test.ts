@@ -12,7 +12,7 @@ import {
   LEGACY_KEY_PAIR
 } from './mock-data.js'
 import { expectJWE, isRecipient } from './assertions.js'
-import { Cipher } from '../../src/index.js'
+import { Cipher, KeyMissError } from '../../src/index.js'
 import { createKeyResolver } from './didKeyResolver.js'
 import { FipsKak } from './FipsKak.js'
 import { RecommendedKak } from './RecommendedKak.js'
@@ -509,7 +509,8 @@ describe('minimal-cipher', function () {
           error = e
         }
         expect(result).toBeNull()
-        expect(error).toBeInstanceOf(Error)
+        expect(error).toBeInstanceOf(KeyMissError)
+        expect((error as Error).name).toBe('KeyMissError')
         expect((error as Error).message).toBe(
           'No matching recipient found for key agreement key.'
         )

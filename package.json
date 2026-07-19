@@ -1,6 +1,6 @@
 {
   "name": "@interop/minimal-cipher",
-  "version": "7.6.2",
+  "version": "7.7.0",
   "description": "Minimal encryption/decryption JWE library.",
   "license": "BSD-3-Clause",
   "type": "module",

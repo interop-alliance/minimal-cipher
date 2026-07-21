@@ -1,5 +1,26 @@
 # minimal-cipher ChangeLog
 
+## Unreleased - TBD
+
+### Added
+
+- `additionalProtectedParams` option on `Cipher.encrypt`,
+  `Cipher.encryptObject`, `Cipher.createEncryptTransformer`, and
+  `Cipher.createEncryptStream`: an object of extra members merged into the JWE
+  protected header before it is base64url-encoded, so the members are covered by
+  the AEAD tag (the protected header is the JWE associated authenticated data).
+  Callers read the members back by parsing `jwe.protected` after a successful
+  decrypt; no decrypt-side option is needed. Setting the reserved `enc` member
+  or `caad` throws a `TypeError`.
+- `chunkedAad` option on `Cipher.createEncryptTransformer` and
+  `Cipher.createEncryptStream` (default `false`): when enabled, the protected
+  header gains `caad: 1` and each stream chunk's AAD is bound to its 0-based
+  chunk index, so reordering or substituting chunks within a stream is detected
+  on decrypt. Decryption auto-detects the `caad` flag per chunk, so no decrypt
+  option is required; streams written without the flag continue to decrypt
+  unchanged, and a `caad` value other than `1` throws (an unsupported future
+  version). Readers must be upgraded before writers enable `chunkedAad`.
+
 ## 7.7.0 - 2026-07-19
 
 ### Added

@@ -2,6 +2,7 @@
  * Copyright (c) 2019-2022 Digital Bazaar, Inc. All rights reserved.
  */
 import { base64url } from './baseX.js'
+import { chunkedAdditionalData } from './util.js'
 import type { IJWE, IRecipient } from '@interop/data-integrity-core'
 import type { CipherAlgorithm } from './types.js'
 
@@ -15,6 +16,7 @@ interface EncryptTransformerOptions {
   additionalData: Uint8Array
   cek: Uint8Array
   chunkSize?: number
+  chunkedAad?: boolean
 }
 
 export class EncryptTransformer {
@@ -24,6 +26,7 @@ export class EncryptTransformer {
   additionalData: Uint8Array
   cek: Uint8Array
   chunkSize: number
+  chunkedAad: boolean
   offset: number
   totalOffset: number
   index: number
@@ -35,7 +38,8 @@ export class EncryptTransformer {
     cipher,
     additionalData,
     cek,
-    chunkSize = DEFAULT_CHUNK_SIZE
+    chunkSize = DEFAULT_CHUNK_SIZE,
+    chunkedAad = false
   }: EncryptTransformerOptions) {
     this.recipients = recipients
     this.encodedProtectedHeader = encodedProtectedHeader
@@ -43,6 +47,7 @@ export class EncryptTransformer {
     this.additionalData = additionalData
     this.cek = cek
     this.chunkSize = chunkSize
+    this.chunkedAad = chunkedAad
     this.offset = 0
     this.totalOffset = 0
     this.index = 0
@@ -110,7 +115,15 @@ export class EncryptTransformer {
   }
 
   async encrypt(data: Uint8Array): Promise<IJWE> {
-    const { cipher, additionalData, cek } = this
+    const { cipher, cek } = this
+    // when chunked-AAD is enabled, bind this chunk to its 0-based index (read
+    // before `flush` increments it); otherwise use the shared header AAD
+    const additionalData = this.chunkedAad
+      ? chunkedAdditionalData({
+          baseAad: this.additionalData,
+          index: this.index
+        })
+      : this.additionalData
     const { ciphertext, iv, tag } = await cipher.encrypt({
       data,
       additionalData,

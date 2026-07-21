@@ -26,18 +26,22 @@ interface EncryptOptions {
   data?: Uint8Array | string
   recipients: IRecipientTemplate[]
   keyResolver: IKeyResolver
+  additionalProtectedParams?: Record<string, unknown>
 }
 
 interface EncryptObjectOptions {
   obj: object
   recipients: IRecipientTemplate[]
   keyResolver: IKeyResolver
+  additionalProtectedParams?: Record<string, unknown>
 }
 
 interface CreateEncryptOptions {
   recipients: IRecipientTemplate[]
   keyResolver: IKeyResolver
   chunkSize?: number
+  additionalProtectedParams?: Record<string, unknown>
+  chunkedAad?: boolean
 }
 
 export class Cipher {
@@ -132,18 +136,31 @@ export class Cipher {
    *   that resolves a key ID to a DH public key.
    * @param {number} [options.chunkSize=1048576] - The size, in bytes,
    *   of the chunks to break the incoming data into.
+   * @param {object} [options.additionalProtectedParams] - Extra members to
+   *   merge into the JWE protected header before it is base64url-encoded, so
+   *   they are covered by the AEAD tag. The reserved `enc` member and `caad`
+   *   (owned by the `chunkedAad` option) must not be set here.
+   * @param {boolean} [options.chunkedAad=false] - When true, bind each chunk
+   *   to its position in the stream: the protected header gains `caad: 1` and
+   *   each chunk's AAD becomes the encoded protected header followed by the
+   *   0-based chunk index, so within-stream chunk reordering or substitution
+   *   is detected on decrypt.
    *
    * @returns {Promise<TransformStream>} Resolves to a TransformStream.
    */
   async createEncryptStream({
     recipients,
     keyResolver,
-    chunkSize
+    chunkSize,
+    additionalProtectedParams,
+    chunkedAad
   }: CreateEncryptOptions): Promise<TransformStream> {
     const transformer = await this.createEncryptTransformer({
       recipients,
       keyResolver,
-      chunkSize
+      chunkSize,
+      additionalProtectedParams,
+      chunkedAad
     })
     return new TransformStream(transformer)
   }
@@ -192,13 +209,18 @@ export class Cipher {
    *   encrypted content.
    * @param {Function} options.keyResolver - A function that returns a Promise
    *   that resolves a key ID to a DH public key.
+   * @param {object} [options.additionalProtectedParams] - Extra members to
+   *   merge into the JWE protected header before it is base64url-encoded, so
+   *   they are covered by the AEAD tag. The reserved `enc` and `caad` members
+   *   must not be set here.
    *
    * @returns {Promise<object>} Resolves to a JWE.
    */
   async encrypt({
     data,
     recipients,
-    keyResolver
+    keyResolver,
+    additionalProtectedParams
   }: EncryptOptions): Promise<IJWE> {
     if (!(data instanceof Uint8Array) && typeof data !== 'string') {
       throw new TypeError('"data" must be a Uint8Array or a string.')
@@ -209,7 +231,8 @@ export class Cipher {
     }
     const transformer = await this.createEncryptTransformer({
       recipients,
-      keyResolver
+      keyResolver,
+      additionalProtectedParams
     })
     return transformer.encrypt(bytes as Uint8Array)
   }
@@ -220,7 +243,8 @@ export class Cipher {
    *
    * @param {object} options - Options to use.
    * @param {object} options.obj - The object to encrypt.
-   * @param {object} options.rest - The other options to be passed to encrypt.
+   * @param {object} options.rest - The other options to be passed to encrypt,
+   *   including the optional `additionalProtectedParams`.
    *
    * @returns {Promise<object>} Resolves to a JWE.
    */
@@ -308,13 +332,24 @@ export class Cipher {
    * @param {number} [options.chunkSize=1048576] - The size, in bytes, of the
    *   chunks to break the incoming data into (only applies if returning a
    *   stream).
+   * @param {object} [options.additionalProtectedParams] - Extra members to
+   *   merge into the JWE protected header before it is base64url-encoded, so
+   *   they are covered by the AEAD tag. The reserved `enc` member and `caad`
+   *   (owned by the `chunkedAad` option) must not be set here.
+   * @param {boolean} [options.chunkedAad=false] - When true, bind each chunk
+   *   to its position in the stream: the protected header gains `caad: 1` and
+   *   each chunk's AAD becomes the encoded protected header followed by the
+   *   0-based chunk index, so within-stream chunk reordering or substitution
+   *   is detected on decrypt.
    *
    * @returns {Promise<EncryptTransformer>} - Resolves to an EncryptTransformer.
    */
   async createEncryptTransformer({
     recipients,
     keyResolver,
-    chunkSize
+    chunkSize,
+    additionalProtectedParams,
+    chunkedAad = false
   }: CreateEncryptOptions): Promise<EncryptTransformer> {
     if (!(Array.isArray(recipients) && recipients.length > 0)) {
       throw new TypeError('"recipients" must be a non-empty array.')
@@ -342,7 +377,29 @@ export class Cipher {
     // create shared protected header as associated authenticated data (aad)
     // ASCII(BASE64URL(UTF8(JWE Protected Header)))
     const enc = cipher.JWE_ENC
-    const jweProtectedHeader = JSON.stringify({ enc })
+    const protectedHeader: Record<string, unknown> = { enc }
+    if (additionalProtectedParams) {
+      for (const name of Object.keys(additionalProtectedParams)) {
+        if (name === 'enc') {
+          throw new TypeError(
+            '"additionalProtectedParams" must not set the reserved "enc" ' +
+              'member.'
+          )
+        }
+        if (name === 'caad') {
+          throw new TypeError(
+            '"additionalProtectedParams" must not set "caad"; use the ' +
+              '"chunkedAad" option instead.'
+          )
+        }
+      }
+      Object.assign(protectedHeader, additionalProtectedParams)
+    }
+    if (chunkedAad) {
+      // flag that each chunk's AAD is bound to its 0-based chunk index
+      protectedHeader.caad = 1
+    }
+    const jweProtectedHeader = JSON.stringify(protectedHeader)
     const encodedProtectedHeader = base64url.encode(
       stringToUint8Array(jweProtectedHeader)
     )
@@ -355,7 +412,8 @@ export class Cipher {
       cipher,
       additionalData,
       cek,
-      chunkSize
+      chunkSize,
+      chunkedAad
     })
   }
 

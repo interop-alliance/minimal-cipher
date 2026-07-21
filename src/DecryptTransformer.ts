@@ -4,7 +4,7 @@
 import { base64url } from './baseX.js'
 import * as fipsAlgorithm from './algorithms/fips.js'
 import * as recAlgorithm from './algorithms/recommended.js'
-import { stringToUint8Array } from './util.js'
+import { chunkedAdditionalData, stringToUint8Array } from './util.js'
 import { KeyMissError } from './errors.js'
 import type {
   IEPK,
@@ -30,6 +30,8 @@ const KEY_ALGORITHM = 'ECDH-ES+A256KW'
 export class DecryptTransformer {
   keyAgreement: KeyAgreementAlgorithm
   keyAgreementKey: IKeyAgreementKey
+  // running 0-based chunk index for chunked-AAD (`caad`) streams
+  _chunkIndex: number
 
   constructor({
     keyAgreement,
@@ -46,6 +48,7 @@ export class DecryptTransformer {
     }
     this.keyAgreement = keyAgreement
     this.keyAgreementKey = keyAgreementKey
+    this._chunkIndex = 0
   }
 
   async transform(
@@ -58,7 +61,7 @@ export class DecryptTransformer {
     }
     const { jwe } = chunk
 
-    const data = await this.decrypt(jwe)
+    const data = await this.decrypt(jwe, this._chunkIndex++)
     if (data === null) {
       const error = new Error('Invalid decryption key.')
       error.name = 'DataError'
@@ -68,7 +71,7 @@ export class DecryptTransformer {
     controller.enqueue(data)
   }
 
-  async decrypt(jwe: IJWE): Promise<Uint8Array | null> {
+  async decrypt(jwe: IJWE, chunkIndex = 0): Promise<Uint8Array | null> {
     // validate JWE
     if (!(jwe && typeof jwe === 'object')) {
       throw new TypeError('"jwe" must be an object.')
@@ -105,6 +108,18 @@ export class DecryptTransformer {
     const cipher = CIPHER_ALGORITHMS[header.enc]
     if (!cipher) {
       throw new Error('Unsupported encryption algorithm "${header.enc}".')
+    }
+    // when the header flags chunked-AAD (`caad`), bind the AAD to this chunk's
+    // 0-based index; an absent `caad` keeps the legacy shared-header AAD
+    if (header.caad !== undefined) {
+      if (header.caad === 1) {
+        additionalData = chunkedAdditionalData({
+          baseAad: additionalData,
+          index: chunkIndex
+        })
+      } else {
+        throw new Error(`Unsupported chunked-AAD version "${header.caad}".`)
+      }
     }
     if (!Array.isArray(jwe.recipients)) {
       throw new TypeError('"jwe.recipients" must be an array.')

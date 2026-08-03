@@ -383,6 +383,9 @@ See
 
 PRs accepted.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) -- code style and contribution
+conventions.
+
 If editing the README, please conform to the
 [standard-readme](https://github.com/RichardLitt/standard-readme) specification.
 

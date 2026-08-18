@@ -1,5 +1,9 @@
 # minimal-cipher ChangeLog
 
+## 7.8.3 - TBD
+
+- Update to latest `x25519-key-agreement-key@5.2.2`.
+
 ## 7.8.2 - 2026-08-18
 
 ### Changed

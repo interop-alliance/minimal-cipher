@@ -46,8 +46,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@interop/data-integrity-core": "^8.4.0",
-    "@interop/ecdsa-multikey": "^2.3.3",
+    "@interop/data-integrity-core": "^8.7.1",
+    "@interop/ecdsa-multikey": "^2.3.4",
     "@noble/ciphers": "^2.2.0",
     "@noble/curves": "^2.2.0",
     "@scure/base": "^2.2.0",
@@ -56,9 +56,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@interop/did-io": "^4.1.0",
-    "@interop/did-method-key": "^7.3.4",
-    "@interop/ed25519-verification-key": "^8.0.3",
+    "@interop/did-io": "^4.1.1",
+    "@interop/did-method-key": "^7.3.5",
+    "@interop/ed25519-verification-key": "^8.0.4",
     "@interop/x25519-key-agreement-key": "^5.2.1",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",

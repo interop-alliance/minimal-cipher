@@ -1,6 +1,6 @@
 # minimal-cipher ChangeLog
 
-## 7.8.2 - TBD
+## 7.8.2 - 2026-08-18
 
 ### Changed
 - Update to latest `@interop/data-integrity-core@8.7.1`.

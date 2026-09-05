@@ -1,5 +1,15 @@
 # minimal-cipher ChangeLog
 
+## 7.10.0 - TBD
+
+### Changed
+
+- `kekFromStaticPeer` now decodes a static X25519 peer key with
+  `@interop/data-integrity-core`'s `decodeMultikey` instead of a hand-rolled
+  multibase decoder. This adds a `z`-prefix check and a 32-byte key length check
+  that the old decoder lacked. The internal-only `multibaseDecode` helper is
+  removed; `multibaseEncode` is unchanged.
+
 ## 7.9.0 - 2026-09-05
 
 ### Added

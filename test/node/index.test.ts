@@ -13,6 +13,10 @@ import {
 } from './mock-data.js'
 import { expectJWE, isRecipient } from './assertions.js'
 import { Cipher, KeyMissError } from '../../src/index.js'
+import {
+  multibaseEncode,
+  MULTICODEC_X25519_PUB_HEADER
+} from '../../src/algorithms/x25519.js'
 import { createKeyResolver } from './didKeyResolver.js'
 import { FipsKak } from './FipsKak.js'
 import { RecommendedKak } from './RecommendedKak.js'
@@ -219,6 +223,47 @@ describe('minimal-cipher', function () {
         expect(error).toBeInstanceOf(Error)
         expect((error as Error).message).toBe('"staticPublicKey" is required.')
       })
+
+      // recommended-only: the multibase decode is x25519-specific
+      it.runIf(version === 'recommended')(
+        'should reject a recipient publicKeyMultibase without a "z" prefix',
+        async function () {
+          const data = getRandomUint8()
+          store.set('urn:bad-prefix', {
+            id: 'urn:bad-prefix',
+            publicKeyMultibase: testKak.publicKeyMultibase.slice(1)
+          })
+          const recipients = [
+            { header: { kid: 'urn:bad-prefix', alg: 'ECDH-ES+A256KW' } }
+          ]
+          await expect(
+            cipher.encrypt({ data, recipients, keyResolver })
+          ).rejects.toThrow('Invalid multikey: expected a base58btc "z" prefix')
+        }
+      )
+
+      // recommended-only: the multibase decode is x25519-specific
+      it.runIf(version === 'recommended')(
+        'should reject a recipient publicKeyMultibase of the wrong length',
+        async function () {
+          const data = getRandomUint8()
+          // 16 bytes under the X25519 multicodec header instead of 32
+          const shortKey = new Uint8Array(16)
+          store.set('urn:bad-length', {
+            id: 'urn:bad-length',
+            publicKeyMultibase: multibaseEncode(
+              MULTICODEC_X25519_PUB_HEADER,
+              shortKey
+            )
+          })
+          const recipients = [
+            { header: { kid: 'urn:bad-length', alg: 'ECDH-ES+A256KW' } }
+          ]
+          await expect(
+            cipher.encrypt({ data, recipients, keyResolver })
+          ).rejects.toThrow(/Invalid key length for multikey codec/)
+        }
+      )
 
       it('should encrypt a simple string', async function () {
         const data = 'simple'

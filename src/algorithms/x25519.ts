@@ -6,6 +6,10 @@ import { deriveSecret, generateEphemeralKeyPair } from './x25519-helper.js'
 import { createKek } from './aeskw.js'
 import { deriveKey } from './ecdhkdf.js'
 import type { IEPK, IKeyAgreementKey } from '@interop/data-integrity-core'
+import {
+  decodeMultikey,
+  MultikeyCodec
+} from '@interop/data-integrity-core/multihash'
 import type {
   EphemeralKeyPair,
   KEKFromEphemeralPeerResult,
@@ -86,10 +90,10 @@ export async function kekFromStaticPeer({
     throw new Error('"staticPublicKey" is required.')
   }
   // static key must be an X25519 multikey
-  const remotePublicKey = multibaseDecode(
-    MULTICODEC_X25519_PUB_HEADER,
-    staticPublicKey.publicKeyMultibase
-  )
+  const { keyBytes: remotePublicKey } = decodeMultikey({
+    multikey: staticPublicKey.publicKeyMultibase,
+    expectedCodec: MultikeyCodec.X25519_PUB
+  })
 
   const encoder = new TextEncoder()
   // "Party U Info"
@@ -122,22 +126,4 @@ export function multibaseEncode(header: Uint8Array, bytes: Uint8Array): string {
   mcBytes.set(header)
   mcBytes.set(bytes, header.length)
   return MULTIBASE_BASE58BTC_HEADER + base58btc.encode(mcBytes)
-}
-
-/**
- * Decodes a given string as a multibase-encoded multicodec value.
- *
- * @param {Uint8Array} header - Expected header bytes for the multicodec value.
- * @param {string} text - Multibase encoded string to decode.
- *
- * @returns {Uint8Array} Decoded bytes.
- */
-export function multibaseDecode(header: Uint8Array, text: string): Uint8Array {
-  const mcValue = base58btc.decode(text.slice(1))
-
-  if (!header.every((val, i) => mcValue[i] === val)) {
-    throw new Error('Multibase value does not have expected header.')
-  }
-
-  return mcValue.slice(header.length)
 }

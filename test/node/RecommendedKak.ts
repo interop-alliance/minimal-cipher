@@ -4,10 +4,13 @@
 import { base58btc as base58 } from '../../src/baseX.js'
 import {
   deriveSecret as dhDeriveSecret,
-  multibaseDecode,
   multibaseEncode,
   MULTICODEC_X25519_PUB_HEADER
 } from '../../src/algorithms/x25519.js'
+import {
+  decodeMultikey,
+  MultikeyCodec
+} from '@interop/data-integrity-core/multihash'
 import nacl from 'tweetnacl'
 import { store } from './store.js'
 
@@ -74,10 +77,10 @@ export class RecommendedKak {
   }
 
   async deriveSecret({ publicKey }: { publicKey: any }): Promise<Uint8Array> {
-    const remotePublicKey = multibaseDecode(
-      MULTICODEC_X25519_PUB_HEADER,
-      publicKey.publicKeyMultibase
-    )
+    const { keyBytes: remotePublicKey } = decodeMultikey({
+      multikey: publicKey.publicKeyMultibase,
+      expectedCodec: MultikeyCodec.X25519_PUB
+    })
 
     const { privateKey } = this
     return dhDeriveSecret({ privateKey, remotePublicKey })

@@ -22,6 +22,14 @@ test('recommended cipher round-trips in the browser', async ({ page }) => {
     // resolves to x25519-helper-browser via the vite alias
     // @ts-expect-error -- runtime-only vite-served path
     const helper = await import('/src/algorithms/x25519-helper.js')
+    // `/@id/` is vite's dev-server endpoint for resolving a bare package
+    // specifier; a plain bare import() here is not rewritten by vite, since
+    // this callback is evaluated in-page rather than transformed as a
+    // vite-served module. The specifier is held in a variable (rather than
+    // passed to `import()` as a literal) so tsc does not attempt to resolve
+    // it as a module path.
+    const multihashSpecifier = '/@id/@interop/data-integrity-core/multihash'
+    const { decodeMultikey, MultikeyCodec } = await import(multihashSpecifier)
 
     // build a minimal in-browser X25519 key agreement key
     const keyPair = await helper.generateEphemeralKeyPair()
@@ -34,10 +42,10 @@ test('recommended cipher round-trips in the browser', async ({ page }) => {
       id,
       publicKeyMultibase,
       async deriveSecret({ publicKey }: { publicKey: any }) {
-        const remotePublicKey = x25519.multibaseDecode(
-          x25519.MULTICODEC_X25519_PUB_HEADER,
-          publicKey.publicKeyMultibase
-        )
+        const { keyBytes: remotePublicKey } = decodeMultikey({
+          multikey: publicKey.publicKeyMultibase,
+          expectedCodec: MultikeyCodec.X25519_PUB
+        })
         return helper.deriveSecret({
           privateKey: keyPair.privateKey,
           remotePublicKey

@@ -12,8 +12,8 @@ importers:
         specifier: ^8.7.1
         version: 8.7.1
       '@interop/ecdsa-multikey':
-        specifier: ^2.3.4
-        version: 2.3.4
+        specifier: ^2.4.0
+        version: 2.4.0
       '@noble/ciphers':
         specifier: ^2.4.0
         version: 2.4.0
@@ -40,11 +40,11 @@ importers:
         specifier: ^7.3.5
         version: 7.3.5
       '@interop/ed25519-verification-key':
-        specifier: ^8.0.4
-        version: 8.0.4
+        specifier: ^8.1.0
+        version: 8.1.0
       '@interop/x25519-key-agreement-key':
-        specifier: ^5.2.2
-        version: 5.2.2
+        specifier: ^5.3.0
+        version: 5.3.0
       '@playwright/test':
         specifier: ^1.60.0
         version: 1.61.1
@@ -192,8 +192,8 @@ packages:
     resolution: {integrity: sha512-gJqAjJFW+PgNxwGpLVTisYENxNrZicyUGVhiHKIt02qcgSJZxS6XH/i9FtNoOLqD3uhc2cpwLzC+fdQTHZQPhA==}
     engines: {node: '>=24.0'}
 
-  '@interop/ecdsa-multikey@2.3.4':
-    resolution: {integrity: sha512-6Xsxqoe4aWEOWaFytS4AX2opNbrhd4bi4JMqNQkIIDs7dCLqqNGbX4UhG9jjoHS1p666dWaa4xO6GWMEQ9aJZQ==}
+  '@interop/ecdsa-multikey@2.4.0':
+    resolution: {integrity: sha512-uR7L3MrPKZxMV5EEMsQxH3TCy0436Q+JgUaNIthe2e0VgsNo/YK7q+w9nSxjYEole4TcYonbbbROXwEKBJGePA==}
     engines: {node: '>=24.0'}
 
   '@interop/ed25519-verification-key@8.0.4':
@@ -205,12 +205,21 @@ packages:
       react-native-get-random-values:
         optional: true
 
+  '@interop/ed25519-verification-key@8.1.0':
+    resolution: {integrity: sha512-kj8aYyTTxBofETxKmKDbrjXyAHAsXLxnfMLwumu2BYjPfwKBN8QxUkEeeKa0x1wovGIefcTAsuASGMYC4Y2TUg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      react-native-get-random-values: '>=1.8.0'
+    peerDependenciesMeta:
+      react-native-get-random-values:
+        optional: true
+
   '@interop/lru-memoize@4.0.3':
     resolution: {integrity: sha512-6c8dnoQNIiL25Q4YovC1a44mREO1lzW3F/lmvdwbAMMbhtGGRoQeqo1H4diwNhBzaxRrUMXrAIwbM26POmI/Yg==}
     engines: {node: '>=24.0'}
 
-  '@interop/x25519-key-agreement-key@5.2.2':
-    resolution: {integrity: sha512-USHYNgK2kCToIkol1IpvOxNGUGoHXrT7a1+D4tuWN+e7cjaNhOgv2Hinh8w1IMmJE11btxaPXHE8+0lt2HqlfQ==}
+  '@interop/x25519-key-agreement-key@5.3.0':
+    resolution: {integrity: sha512-c/DXLw0kBGICScAw/5Pk6rn9dzjk9tl6Jl9f6yoOle5I7+8998TqaDkVQkMO0TsEf2/XAPcu61VThnJCC++zFQ==}
     engines: {node: '>=24.0'}
 
   '@jridgewell/resolve-uri@3.1.2':
@@ -231,10 +240,6 @@ packages:
 
   '@noble/ciphers@2.4.0':
     resolution: {integrity: sha512-AnjFn0Jv92laAkvMrghlFZq4qQCIN/4DxFV/eooqtC2YTjB7kBeLMS2T9KJX4Dn+ZVXLOwK0lSgqDtx9gvxtiw==}
-    engines: {node: '>= 20.19.0'}
-
-  '@noble/curves@2.2.0':
-    resolution: {integrity: sha512-T/BoHgFXirb0ENSPBquzX0rcjXeM6Lo892a2jlYJkqk83LqZx0l1Of7DzlKJ6jkpvMrkHSnAcgb5JegL8SeIkQ==}
     engines: {node: '>= 20.19.0'}
 
   '@noble/curves@2.4.0':
@@ -1231,10 +1236,10 @@ snapshots:
     transitivePeerDependencies:
       - react-native-get-random-values
 
-  '@interop/ecdsa-multikey@2.3.4':
+  '@interop/ecdsa-multikey@2.4.0':
     dependencies:
       '@interop/data-integrity-core': 8.7.1
-      '@scure/base': 2.3.0
+      '@scure/base': 2.4.0
 
   '@interop/ed25519-verification-key@8.0.4':
     dependencies:
@@ -1243,15 +1248,22 @@ snapshots:
       '@noble/hashes': 2.2.0
       '@scure/base': 2.3.0
 
+  '@interop/ed25519-verification-key@8.1.0':
+    dependencies:
+      '@interop/data-integrity-core': 8.7.1
+      '@noble/ed25519': 3.1.0
+      '@noble/hashes': 2.4.0
+      '@scure/base': 2.4.0
+
   '@interop/lru-memoize@4.0.3':
     dependencies:
       lru-cache: 11.5.2
 
-  '@interop/x25519-key-agreement-key@5.2.2':
+  '@interop/x25519-key-agreement-key@5.3.0':
     dependencies:
       '@interop/data-integrity-core': 8.7.1
-      '@noble/curves': 2.2.0
-      '@scure/base': 2.3.0
+      '@noble/curves': 2.4.0
+      '@scure/base': 2.4.0
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
@@ -1270,10 +1282,6 @@ snapshots:
     optional: true
 
   '@noble/ciphers@2.4.0': {}
-
-  '@noble/curves@2.2.0':
-    dependencies:
-      '@noble/hashes': 2.2.0
 
   '@noble/curves@2.4.0':
     dependencies:

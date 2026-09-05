@@ -365,16 +365,24 @@ interface KEK {
   algorithm: { name: string }
 
   // Wraps the CEK bytes; resolves to the base64url-encoded wrapped key.
+  // Throws InvalidKeyLengthError if the length cannot be wrapped.
   wrapKey(options: { unwrappedKey: Uint8Array }): Promise<string>
 
   // Unwraps a base64url-encoded wrapped key; resolves to the CEK bytes,
-  // or null if unwrapping fails (e.g. this KEK does not match the recipient).
+  // or null if the integrity check fails (this KEK does not match).
+  // Throws InvalidKeyLengthError if the length cannot be unwrapped.
   unwrapKey(options: { wrappedKey: string }): Promise<Uint8Array | null>
 }
 ```
 
-The built-in implementation wraps the CEK with AES Key Wrap (`A256KW`) using the
-Web Crypto API; see `src/algorithms/aeskw.ts`.
+The built-in implementation wraps the CEK with AES Key Wrap (`A256KW`, RFC 3394)
+through the Web Crypto API where the runtime provides it, and otherwise with a
+pure-JS primitive; see `src/algorithms/aeskw.ts`. It accepts key material of any
+multiple of 8 bytes from 16 up. `InvalidKeyLengthError` (a `RangeError`
+subclass, exported from the package) is thrown before any cryptography runs when
+the key material or the wrapped bytes have a length the algorithm cannot
+process. `decrypt` and `decryptObject` treat that error as a failed decryption
+and resolve `null`.
 
 ## Contribute
 

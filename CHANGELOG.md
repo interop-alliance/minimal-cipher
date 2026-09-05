@@ -1,5 +1,23 @@
 # minimal-cipher ChangeLog
 
+## 7.9.0 - TBD
+
+### Added
+
+- `InvalidKeyLengthError` (exported, a `RangeError` subclass). `wrapKey` throws
+  it when the key material is not a multiple of 8 bytes or is shorter than 16.
+  `unwrapKey` throws it when the wrapped bytes are not a multiple of 8 or are
+  shorter than 24. `unwrapKey` still resolves `null` on an integrity-check miss.
+  `decrypt` and `decryptObject` catch the error and resolve `null`.
+
+### Fixed
+
+- The WebCrypto AES-KW backend accepted only 16, 24, and 32-byte key material.
+  Other RFC 3394 lengths failed with an uncaught `DataError` on wrap and `null`
+  on unwrap. Both backends now accept any multiple of 8 bytes from 16 up. The
+  WebCrypto backend delegates the sizes it cannot import to the pure-JS one.
+  Output bytes for the three AES sizes are unchanged.
+
 ## 7.8.3 - 2026-08-18
 
 - Update to latest `x25519-key-agreement-key@5.2.2`.
@@ -7,6 +25,7 @@
 ## 7.8.2 - 2026-08-18
 
 ### Changed
+
 - Update to latest `@interop/data-integrity-core@8.7.1`.
 
 ## 7.8.1 - 2026-08-03

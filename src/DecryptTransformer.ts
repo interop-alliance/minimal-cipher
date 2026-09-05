@@ -5,7 +5,7 @@ import { base64url } from './baseX.js'
 import * as fipsAlgorithm from './algorithms/fips.js'
 import * as recAlgorithm from './algorithms/recommended.js'
 import { chunkedAdditionalData, stringToUint8Array } from './util.js'
-import { KeyMissError } from './errors.js'
+import { InvalidKeyLengthError, KeyMissError } from './errors.js'
 import type {
   IEPK,
   IJWE,
@@ -149,7 +149,16 @@ export class DecryptTransformer {
       keyAgreementKey,
       epk: epk as IEPK
     })
-    const cek = await kek.unwrapKey({ wrappedKey })
+    let cek: Uint8Array | null
+    try {
+      cek = await kek.unwrapKey({ wrappedKey })
+    } catch (err) {
+      // a malformed-length `encrypted_key` is a failed decryption, not a bug
+      if (err instanceof InvalidKeyLengthError) {
+        return null
+      }
+      throw err
+    }
     if (!cek) {
       // failed to unwrap key
       return null

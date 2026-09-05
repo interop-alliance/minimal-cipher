@@ -41,7 +41,11 @@ export interface EphemeralKeyPair {
   epk: IEPK
 }
 
-/** A key-encryption key (KEK) used to wrap/unwrap a CEK. */
+/**
+ * A key-encryption key (KEK) used to wrap/unwrap a CEK. `unwrapKey` resolves
+ * `null` when the integrity check fails (the KEK does not match); both methods
+ * throw `InvalidKeyLengthError` on a length AES-KW cannot process.
+ */
 export interface KEK {
   algorithm: { name: string }
   wrapKey(options: { unwrappedKey: Uint8Array }): Promise<string>

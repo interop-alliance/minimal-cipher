@@ -273,8 +273,9 @@ export class Cipher {
    * @param {object} options.keyAgreementKey - A key agreement key API with
    *   `id` and `deriveSecret`.
    *
-   * @returns {Promise<Uint8Array>} - Resolves to the decrypted data
-   *   or `null` if the decryption failed.
+   * @returns {Promise<Uint8Array>} - Resolves to the decrypted data, or
+   *   `null` if the decryption failed (the key does not unwrap the CEK, or
+   *   the `encrypted_key` has a length AES-KW cannot process).
    */
   async decrypt({
     jwe,
@@ -296,8 +297,8 @@ export class Cipher {
    * @param {object} options.keyAgreementKey - A key agreement key API with
    *   `id` and `deriveSecret`.
    *
-   * @returns {Promise<object>} - Resolves to the decrypted object or `null`
-   *   if the decryption failed.
+   * @returns {Promise<object>} - Resolves to the decrypted object, or `null`
+   *   if the decryption failed (see `decrypt`).
    */
   async decryptObject({
     jwe,

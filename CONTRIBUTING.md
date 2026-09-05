@@ -1,7 +1,7 @@
 # Contributing
 
-Code style and contribution conventions. Coding agents receive this file via
-the include in [AGENTS.md](AGENTS.md).
+Code style and contribution conventions. Coding agents receive this file via the
+include in [AGENTS.md](AGENTS.md).
 
 <!-- BEGIN interop-conventions-core (canonical source: isomorphic-lib-template/CONTRIBUTING.md) -->
 

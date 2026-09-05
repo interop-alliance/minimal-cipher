@@ -339,6 +339,42 @@ describe('minimal-cipher', function () {
         expect(Uint8Array.from(result)).toEqual(data)
       })
 
+      it('should resolve null for an encrypted_key of invalid length', async function () {
+        const data = getRandomUint8()
+        const jwe = await cipher.encrypt({
+          data,
+          recipients: recipient,
+          keyResolver
+        })
+        // drop one base64url character: the wrapped key decodes to a length
+        // AES-KW cannot process, which is a failed decryption, not a throw
+        const { encrypted_key: wrappedKey } = jwe.recipients[0]
+        jwe.recipients[0].encrypted_key = wrappedKey.slice(0, -2)
+        const result = await cipher.decrypt({ jwe, keyAgreementKey: testKak })
+        expect(result).toBeNull()
+        const object = await cipher.decryptObject({
+          jwe,
+          keyAgreementKey: testKak
+        })
+        expect(object).toBeNull()
+      })
+
+      it('should fail a stream with DataError for an encrypted_key of invalid length', async function () {
+        const data = getRandomUint8({ size: 10 })
+        const chunks = await encryptStream({ data, chunkSize: 5 })
+        const { encrypted_key: wrappedKey } = chunks[1].jwe.recipients[0]
+        chunks[1].jwe.recipients[0].encrypted_key = wrappedKey.slice(0, -2)
+        let error: any = null
+        try {
+          await decryptStream({ chunks })
+        } catch (err) {
+          error = err
+        }
+        expect(error).toBeInstanceOf(Error)
+        expect(error.name).toBe('DataError')
+        expect(error.message).toBe('Invalid decryption key.')
+      })
+
       it('should decrypt an Uint8Array with multiple recipients', async function () {
         const data = getRandomUint8()
         const secondKak = await Kak.generate({ id: 'urn:recipient2' })

@@ -4,7 +4,54 @@
 import { aeskw } from '@noble/ciphers/aes.js'
 import { base64url } from '../baseX.js'
 import crypto from '../crypto.js'
+import { InvalidKeyLengthError } from '../errors.js'
 import type { KEK as KEKInterface } from '../types.js'
+
+/**
+ * AES key sizes in bytes. WebCrypto can only represent key material to wrap
+ * as a `CryptoKey`, and its AES import accepts these lengths alone, so the
+ * WebCrypto backend handles them natively and hands every other RFC 3394
+ * length to the pure-JS primitive.
+ */
+const AES_KEY_LENGTHS = new Set([16, 24, 32])
+
+/**
+ * Checks that key material has a length RFC 3394 can wrap: a multiple of 8
+ * bytes and at least 16 (the two-semiblock minimum; 8-byte inputs need the
+ * padded variant, RFC 5649, which is a different algorithm).
+ *
+ * @param {Uint8Array} unwrappedKey - The key material to wrap.
+ *
+ * @throws {InvalidKeyLengthError} - On an unsupported length.
+ */
+function assertWrappableLength(unwrappedKey: Uint8Array): void {
+  const { length } = unwrappedKey
+  if (length < 16 || length % 8 !== 0) {
+    throw new InvalidKeyLengthError(
+      `AES-KW key material must be a multiple of 8 bytes and at least ` +
+        `16 bytes; got ${length}.`
+    )
+  }
+}
+
+/**
+ * Checks that wrapped bytes have a length RFC 3394 can unwrap: a multiple of
+ * 8 bytes and at least 24 (the 8-byte integrity block plus the 16-byte
+ * minimum payload).
+ *
+ * @param {Uint8Array} wrappedKey - The wrapped bytes.
+ *
+ * @throws {InvalidKeyLengthError} - On an unsupported length.
+ */
+function assertUnwrappableLength(wrappedKey: Uint8Array): void {
+  const { length } = wrappedKey
+  if (length < 24 || length % 8 !== 0) {
+    throw new InvalidKeyLengthError(
+      `AES-KW wrapped key must be a multiple of 8 bytes and at least ` +
+        `24 bytes; got ${length}.`
+    )
+  }
+}
 
 /**
  * Feature-detects whether the given WebCrypto instance provides the AES-KW
@@ -31,10 +78,13 @@ function hasWebCryptoKeyWrap(cryptoObj?: Crypto): boolean {
 class Kek implements KEKInterface {
   // `CryptoKey` is the Web Crypto API key type, sourced from the DOM lib.
   key: CryptoKey
+  // Handles the lengths WebCrypto cannot represent as an AES `CryptoKey`.
+  _fallback: PureJsKek
   algorithm: { name: string }
 
-  constructor(key: CryptoKey) {
+  constructor({ key, keyData }: { key: CryptoKey; keyData: Uint8Array }) {
     this.key = key
+    this._fallback = new PureJsKek(keyData)
     this.algorithm = { name: 'A256KW' }
   }
 
@@ -46,12 +96,20 @@ class Kek implements KEKInterface {
    *   `Uint8Array`.
    *
    * @returns {Promise<string>} - The base64url-encoded wrapped key bytes.
+   *
+   * @throws {InvalidKeyLengthError} - When `unwrappedKey` is not a multiple
+   *   of 8 bytes or is shorter than 16 bytes.
    */
   async wrapKey({
     unwrappedKey
   }: {
     unwrappedKey: Uint8Array
   }): Promise<string> {
+    assertWrappableLength(unwrappedKey)
+    if (!AES_KEY_LENGTHS.has(unwrappedKey.length)) {
+      // WebCrypto cannot import non-AES-sized material; same bytes either way.
+      return this._fallback.wrapKey({ unwrappedKey })
+    }
     const kek = this.key
     // Note: `AES-GCM` algorithm name doesn't matter; will be exported raw.
     const extractable = true
@@ -84,15 +142,23 @@ class Kek implements KEKInterface {
    *
    * @returns {Promise<Uint8Array>} - Resolves to the key bytes or null if
    *   the unwrapping fails because the key does not match.
+   *
+   * @throws {InvalidKeyLengthError} - When the wrapped bytes are not a
+   *   multiple of 8 bytes or are shorter than 24 bytes.
    */
   async unwrapKey({
     wrappedKey
   }: {
     wrappedKey: string
   }): Promise<Uint8Array | null> {
+    const wrappedKeyBytes = base64url.decode(wrappedKey)
+    assertUnwrappableLength(wrappedKeyBytes)
+    if (!AES_KEY_LENGTHS.has(wrappedKeyBytes.length - 8)) {
+      // WebCrypto cannot unwrap into a non-AES-sized key; same bytes either way.
+      return this._fallback.unwrapKey({ wrappedKey })
+    }
     const kek = this.key
     // Note: `AES-GCM` algorithm name doesn't matter; will be exported raw.
-    const wrappedKeyBytes = base64url.decode(wrappedKey)
     try {
       const extractable = true
       const key = await crypto.subtle.unwrapKey(
@@ -139,12 +205,16 @@ class PureJsKek implements KEKInterface {
    *   `Uint8Array`.
    *
    * @returns {Promise<string>} - The base64url-encoded wrapped key bytes.
+   *
+   * @throws {InvalidKeyLengthError} - When `unwrappedKey` is not a multiple
+   *   of 8 bytes or is shorter than 16 bytes.
    */
   async wrapKey({
     unwrappedKey
   }: {
     unwrappedKey: Uint8Array
   }): Promise<string> {
+    assertWrappableLength(unwrappedKey)
     const wrappedKey = aeskw(this._keyData).encrypt(unwrappedKey)
     return base64url.encode(wrappedKey)
   }
@@ -158,6 +228,9 @@ class PureJsKek implements KEKInterface {
    *
    * @returns {Promise<Uint8Array>} - Resolves to the key bytes or null if
    *   the unwrapping fails because the key does not match.
+   *
+   * @throws {InvalidKeyLengthError} - When the wrapped bytes are not a
+   *   multiple of 8 bytes or are shorter than 24 bytes.
    */
   async unwrapKey({
     wrappedKey
@@ -165,10 +238,12 @@ class PureJsKek implements KEKInterface {
     wrappedKey: string
   }): Promise<Uint8Array | null> {
     const wrappedKeyBytes = base64url.decode(wrappedKey)
+    assertUnwrappableLength(wrappedKeyBytes)
+    // the length is already checked, so the only failure left is the
+    // integrity check, which means the KEK does not match
     try {
       return aeskw(this._keyData).decrypt(wrappedKeyBytes)
     } catch {
-      // integrity check failed -- KEK does not match
       return null
     }
   }
@@ -177,7 +252,10 @@ class PureJsKek implements KEKInterface {
 /**
  * Creates a KEK, selecting the backend by capability: the WebCrypto `AES-KW`
  * path when the runtime provides the key-wrap ops, otherwise the pure-JS
- * RFC 3394 fallback. Both backends produce identical wrapped bytes.
+ * RFC 3394 fallback. Both backends accept every RFC 3394 length (a multiple
+ * of 8 bytes, at least 16) and produce identical wrapped bytes; the WebCrypto
+ * backend itself uses the pure-JS primitive for the lengths WebCrypto cannot
+ * represent as an AES `CryptoKey`.
  *
  * @param {object} options - The options to use.
  * @param {Uint8Array} options.keyData - The 256-bit KEK material.
@@ -204,5 +282,5 @@ export async function createKek({
     extractable,
     ['wrapKey', 'unwrapKey']
   )
-  return new Kek(key)
+  return new Kek({ key, keyData })
 }

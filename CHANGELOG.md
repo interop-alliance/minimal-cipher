@@ -1,5 +1,11 @@
 # minimal-cipher ChangeLog
 
+## 7.10.1 - TBD
+
+### Changed
+
+- Use `X25519KeyAgreementKey2020.fromEd25519` for conversion.
+
 ## 7.10.0 - 2026-09-05
 
 ### Changed

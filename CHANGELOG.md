@@ -1,5 +1,11 @@
 # minimal-cipher ChangeLog
 
+## 7.10.2 - TBD
+
+### Changed
+
+- Update to latest ed25519 key dep (`didKeySigner()`).
+
 ## 7.10.1 - 2026-09-09
 
 ### Changed

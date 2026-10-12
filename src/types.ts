@@ -31,7 +31,7 @@ export interface CipherAlgorithm {
   JWE_ENC: string
   generateKey(): Promise<Uint8Array>
   encrypt(options: CipherEncryptOptions): Promise<EncryptResult>
-  decrypt(options: CipherDecryptOptions): Promise<Uint8Array | null>
+  decrypt(options: CipherDecryptOptions): Promise<Uint8Array>
 }
 
 /** An ephemeral key pair used during key agreement. */

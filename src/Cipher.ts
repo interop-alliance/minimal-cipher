@@ -178,6 +178,10 @@ export class Cipher {
    * (KEK) generated via a shared secret between an ephemeral ECDH key and a
    * static ECDH key (ECDH-ES).
    *
+   * The stream errors with `KeyMissError` when the key matches no recipient
+   * of a chunk or does not unwrap its content encryption key, and with
+   * `IntegrityError` when a chunk's AEAD tag does not verify.
+   *
    * @param {object} options - Options for createDecryptStream.
    * @param {object} options.keyAgreementKey - A key agreement key API with
    *   `id` and deriveSecret`.
@@ -273,9 +277,11 @@ export class Cipher {
    * @param {object} options.keyAgreementKey - A key agreement key API with
    *   `id` and `deriveSecret`.
    *
-   * @returns {Promise<Uint8Array>} - Resolves to the decrypted data, or
-   *   `null` if the decryption failed (the key does not unwrap the CEK, or
-   *   the `encrypted_key` has a length AES-KW cannot process).
+   * @returns {Promise<Uint8Array>} - Resolves to the decrypted data.
+   * @throws {KeyMissError} The key matches no recipient, or does not unwrap
+   *   the content encryption key.
+   * @throws {IntegrityError} The content's AEAD tag did not verify (the
+   *   envelope was corrupted or tampered with).
    */
   async decrypt({
     jwe,
@@ -283,7 +289,7 @@ export class Cipher {
   }: {
     jwe: IJWE
     keyAgreementKey: IKeyAgreementKey
-  }): Promise<Uint8Array | null> {
+  }): Promise<Uint8Array> {
     const transformer = await this.createDecryptTransformer({ keyAgreementKey })
     return transformer.decrypt(jwe)
   }
@@ -297,8 +303,9 @@ export class Cipher {
    * @param {object} options.keyAgreementKey - A key agreement key API with
    *   `id` and `deriveSecret`.
    *
-   * @returns {Promise<object>} - Resolves to the decrypted object, or `null`
-   *   if the decryption failed (see `decrypt`).
+   * @returns {Promise<object>} - Resolves to the decrypted object.
+   * @throws {KeyMissError} See `decrypt`.
+   * @throws {IntegrityError} See `decrypt`.
    */
   async decryptObject({
     jwe,
@@ -306,12 +313,8 @@ export class Cipher {
   }: {
     jwe: IJWE
     keyAgreementKey: IKeyAgreementKey
-  }): Promise<object | null> {
+  }): Promise<object> {
     const data = await this.decrypt({ jwe, keyAgreementKey })
-    if (!data) {
-      // decryption failed
-      return null
-    }
     return JSON.parse(new TextDecoder().decode(data))
   }
 

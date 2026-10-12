@@ -12,7 +12,7 @@ import {
   LEGACY_KEY_PAIR
 } from './mock-data.js'
 import { expectJWE, isRecipient } from './assertions.js'
-import { Cipher, KeyMissError } from '../../src/index.js'
+import { Cipher, IntegrityError, KeyMissError } from '../../src/index.js'
 import {
   multibaseEncode,
   MULTICODEC_X25519_PUB_HEADER
@@ -28,6 +28,15 @@ const KakClass = new Map<string, any>([
   ['recommended', RecommendedKak],
   ['fips', FipsKak]
 ])
+
+/**
+ * Flips the first base64url character of `value`, corrupting the bytes it
+ * encodes without changing the decoded length.
+ */
+function flipFirst(value: string): string {
+  const first = value.slice(0, 1)
+  return (first === 'A' ? 'B' : 'A') + value.slice(1)
+}
 
 describe('minimal-cipher', function () {
   cipherVersions.forEach(version => {
@@ -384,7 +393,7 @@ describe('minimal-cipher', function () {
         expect(Uint8Array.from(result)).toEqual(data)
       })
 
-      it('should resolve null for an encrypted_key of invalid length', async function () {
+      it('should throw KeyMissError for an encrypted_key of invalid length', async function () {
         const data = getRandomUint8()
         const jwe = await cipher.encrypt({
           data,
@@ -392,19 +401,51 @@ describe('minimal-cipher', function () {
           keyResolver
         })
         // drop one base64url character: the wrapped key decodes to a length
-        // AES-KW cannot process, which is a failed decryption, not a throw
+        // AES-KW cannot process, which is a key miss, not a bug
         const { encrypted_key: wrappedKey } = jwe.recipients[0]
         jwe.recipients[0].encrypted_key = wrappedKey.slice(0, -2)
-        const result = await cipher.decrypt({ jwe, keyAgreementKey: testKak })
-        expect(result).toBeNull()
-        const object = await cipher.decryptObject({
-          jwe,
-          keyAgreementKey: testKak
+        await expect(
+          cipher.decrypt({ jwe, keyAgreementKey: testKak })
+        ).rejects.toMatchObject({
+          name: 'KeyMissError',
+          message: 'Invalid decryption key.'
         })
-        expect(object).toBeNull()
+        await expect(
+          cipher.decryptObject({ jwe, keyAgreementKey: testKak })
+        ).rejects.toBeInstanceOf(KeyMissError)
       })
 
-      it('should fail a stream with DataError for an encrypted_key of invalid length', async function () {
+      it('should throw KeyMissError for an encrypted_key that does not unwrap', async function () {
+        const data = getRandomUint8()
+        const jwe = await cipher.encrypt({
+          data,
+          recipients: recipient,
+          keyResolver
+        })
+        // corrupt the wrapped key without changing its length: AES-KW's
+        // integrity check fails, which is a key miss
+        const { encrypted_key: wrappedKey } = jwe.recipients[0]
+        jwe.recipients[0].encrypted_key = flipFirst(wrappedKey)
+        await expect(
+          cipher.decrypt({ jwe, keyAgreementKey: testKak })
+        ).rejects.toBeInstanceOf(KeyMissError)
+      })
+
+      it('should not report a non-base64url ciphertext as IntegrityError', async function () {
+        const data = getRandomUint8()
+        const jwe = await cipher.encrypt({
+          data,
+          recipients: recipient,
+          keyResolver
+        })
+        jwe.ciphertext = jwe.ciphertext + '+='
+        const result = cipher.decrypt({ jwe, keyAgreementKey: testKak })
+        await expect(result).rejects.toBeInstanceOf(Error)
+        await expect(result).rejects.not.toBeInstanceOf(IntegrityError)
+        await expect(result).rejects.not.toBeInstanceOf(KeyMissError)
+      })
+
+      it('should fail a stream with KeyMissError for an encrypted_key of invalid length', async function () {
         const data = getRandomUint8({ size: 10 })
         const chunks = await encryptStream({ data, chunkSize: 5 })
         const { encrypted_key: wrappedKey } = chunks[1].jwe.recipients[0]
@@ -415,9 +456,48 @@ describe('minimal-cipher', function () {
         } catch (err) {
           error = err
         }
-        expect(error).toBeInstanceOf(Error)
-        expect(error.name).toBe('DataError')
+        expect(error).toBeInstanceOf(KeyMissError)
+        expect(error.name).toBe('KeyMissError')
         expect(error.message).toBe('Invalid decryption key.')
+      })
+
+      it('should throw IntegrityError for tampered ciphertext', async function () {
+        const data = getRandomUint8()
+        const jwe = await cipher.encrypt({
+          data,
+          recipients: recipient,
+          keyResolver
+        })
+        jwe.ciphertext = flipFirst(jwe.ciphertext)
+        await expect(
+          cipher.decrypt({ jwe, keyAgreementKey: testKak })
+        ).rejects.toMatchObject({
+          name: 'IntegrityError',
+          cause: expect.any(Error)
+        })
+      })
+
+      it('should throw IntegrityError for a tampered tag', async function () {
+        const data = getRandomUint8()
+        const jwe = await cipher.encrypt({
+          data,
+          recipients: recipient,
+          keyResolver
+        })
+        jwe.tag = flipFirst(jwe.tag)
+        await expect(
+          cipher.decrypt({ jwe, keyAgreementKey: testKak })
+        ).rejects.toBeInstanceOf(IntegrityError)
+      })
+
+      it('should fail a stream with IntegrityError for a tampered chunk', async function () {
+        const data = getRandomUint8({ size: 10 })
+        const chunks = await encryptStream({ data, chunkSize: 5 })
+        chunks[1].jwe.ciphertext = flipFirst(chunks[1].jwe.ciphertext)
+        await expect(decryptStream({ chunks })).rejects.toMatchObject({
+          name: 'IntegrityError',
+          cause: expect.any(Error)
+        })
       })
 
       it('should decrypt an Uint8Array with multiple recipients', async function () {

@@ -1,5 +1,22 @@
 # minimal-cipher ChangeLog
 
+## 7.11.0 - TBD
+
+### Added
+
+- `IntegrityError`, thrown when a JWE's content fails its AEAD check after the
+  content key was unwrapped. The cipher backend's error is the `cause`. Before,
+  the backend's raw error propagated as is, and the browser `XC20P` cipher
+  resolved `null`.
+
+### Changed
+
+- `decrypt` and `decryptObject` now throw `KeyMissError` when the key matches a
+  recipient but does not unwrap its content key, the same error a recipient
+  mismatch raises. Before, they resolved `null`.
+- A decrypt stream whose chunk's content key does not unwrap now errors with
+  `KeyMissError`. Before, it was a plain `Error` named `DataError`.
+
 ## 7.10.3 - 2026-09-25
 
 ### Changed

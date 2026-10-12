@@ -76,7 +76,7 @@ export async function decrypt({
   tag,
   additionalData,
   cek
-}: CipherDecryptOptions): Promise<Uint8Array | null> {
+}: CipherDecryptOptions): Promise<Uint8Array> {
   if (!(iv instanceof Uint8Array)) {
     throw new Error('Invalid or missing "iv".')
   }
@@ -95,7 +95,13 @@ export async function decrypt({
   const encrypted = new Uint8Array(ciphertext.length + cipher.tagLength)
   encrypted.set(ciphertext)
   encrypted.set(tag, ciphertext.length)
-  return cipher.open(iv, encrypted, additionalData)
+  const decrypted = cipher.open(iv, encrypted, additionalData)
+  if (decrypted === null) {
+    // stablelib reports a failed AEAD check as `null`; throw like the other
+    // backends so callers have one failure path
+    throw new Error('Unable to authenticate data.')
+  }
+  return decrypted
 }
 
 // internal function exported for reuse by XChaCha20Poly1305

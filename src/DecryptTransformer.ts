@@ -5,7 +5,11 @@ import { base64url } from './baseX.js'
 import * as fipsAlgorithm from './algorithms/fips.js'
 import * as recAlgorithm from './algorithms/recommended.js'
 import { chunkedAdditionalData, stringToUint8Array } from './util.js'
-import { InvalidKeyLengthError, KeyMissError } from './errors.js'
+import {
+  IntegrityError,
+  InvalidKeyLengthError,
+  KeyMissError
+} from './errors.js'
 import type {
   IEPK,
   IJWE,
@@ -62,16 +66,10 @@ export class DecryptTransformer {
     const { jwe } = chunk
 
     const data = await this.decrypt(jwe, this._chunkIndex++)
-    if (data === null) {
-      const error = new Error('Invalid decryption key.')
-      error.name = 'DataError'
-      throw error
-    }
-
     controller.enqueue(data)
   }
 
-  async decrypt(jwe: IJWE, chunkIndex = 0): Promise<Uint8Array | null> {
+  async decrypt(jwe: IJWE, chunkIndex = 0): Promise<Uint8Array> {
     // validate JWE
     if (!(jwe && typeof jwe === 'object')) {
       throw new TypeError('"jwe" must be an object.')
@@ -153,26 +151,35 @@ export class DecryptTransformer {
     try {
       cek = await kek.unwrapKey({ wrappedKey })
     } catch (err) {
-      // a malformed-length `encrypted_key` is a failed decryption, not a bug
+      // a malformed-length `encrypted_key` is a key miss, not a bug
       if (err instanceof InvalidKeyLengthError) {
-        return null
+        throw new KeyMissError('Invalid decryption key.', { cause: err })
       }
       throw err
     }
     if (!cek) {
-      // failed to unwrap key
-      return null
+      // the key selected a recipient but did not unwrap its content key
+      throw new KeyMissError('Invalid decryption key.')
     }
 
+    // decode content outside the integrity try: a non-base64url member is a
+    // malformed JWE, not a failed AEAD check
+    const ciphertext = base64url.decode(jwe.ciphertext)
+    const iv = base64url.decode(jwe.iv)
+    const tag = base64url.decode(jwe.tag)
+
     // decrypt content
-    const { ciphertext, iv, tag } = jwe
-    return cipher.decrypt({
-      ciphertext: base64url.decode(ciphertext),
-      iv: base64url.decode(iv),
-      tag: base64url.decode(tag),
-      additionalData,
-      cek
-    })
+    try {
+      return await cipher.decrypt({ ciphertext, iv, tag, additionalData, cek })
+    } catch (err) {
+      // the key unwrapped the CEK, so a failure here is the AEAD tag not
+      // verifying over the ciphertext and additional data
+      throw new IntegrityError(
+        'JWE content failed to authenticate: the ciphertext, tag, or ' +
+          'protected header was corrupted or tampered with.',
+        { cause: err }
+      )
+    }
   }
 }
 

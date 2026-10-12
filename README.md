@@ -317,6 +317,19 @@ const data = await cipher.decrypt({ jwe, keyAgreementKey })
 const object = await cipher.decryptObject({ jwe, keyAgreementKey })
 ```
 
+A decrypt can fail in three distinguishable ways, each with a stable `name` that
+a consumer can match without importing the class (name matching survives a
+second installed copy of the package):
+
+- `KeyMissError` -- `keyAgreementKey` is not a recipient of the JWE, or it is a
+  recipient but does not unwrap the content key. A decrypt stream errors with
+  `KeyMissError` for the same conditions.
+- `IntegrityError` -- the key unwrapped the content key, but the AEAD tag did
+  not verify over the ciphertext and additional data. The envelope was corrupted
+  or tampered with. The cipher backend's error is the `cause`.
+- any other error -- a malformed JWE (missing, mistyped, or non-base64url
+  members, an unsupported `enc`), which is a `TypeError` or a plain `Error`.
+
 To decrypt streamed (chunked) data, use `createDecryptStream()`. It returns a
 [`TransformStream`][Streams API] that takes `{ jwe }` chunks (as produced by
 `createEncryptStream()`) and outputs the decrypted `Uint8Array` chunks:

@@ -112,17 +112,19 @@ export async function decrypt({
   const { subkey, iv: newIV } = await _generateSubkey({ cek, nonce: iv })
 
   // decrypt `ciphertext`
-  const result = await _decrypt({
-    ciphertext,
-    iv: newIV,
-    tag,
-    additionalData,
-    cek: subkey
-  })
-  // wipe generated values
-  subkey.fill(0)
-  newIV.fill(0)
-  return result
+  try {
+    return await _decrypt({
+      ciphertext,
+      iv: newIV,
+      tag,
+      additionalData,
+      cek: subkey
+    })
+  } finally {
+    // wipe generated values, also when the AEAD check throws
+    subkey.fill(0)
+    newIV.fill(0)
+  }
 }
 
 async function _generateSubkey({

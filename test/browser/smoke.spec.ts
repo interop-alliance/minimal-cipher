@@ -12,7 +12,7 @@ import { expect, test } from '@playwright/test'
 test('recommended cipher round-trips in the browser', async ({ page }) => {
   await page.goto('/test/index.html')
 
-  const roundTripped = await page.evaluate(async () => {
+  const outcome = await page.evaluate(async () => {
     // These specifiers are vite-served source URLs resolved at runtime in the
     // browser, not modules tsc can resolve at type-check time.
     // @ts-expect-error -- runtime-only vite-served path
@@ -67,8 +67,23 @@ test('recommended cipher round-trips in the browser', async ({ page }) => {
       keyResolver
     })
     const decrypted = await cipher.decrypt({ jwe, keyAgreementKey: kak })
-    return new TextDecoder().decode(decrypted as Uint8Array) === message
+    const roundTripped =
+      new TextDecoder().decode(decrypted as Uint8Array) === message
+
+    // the browser uses the pure-JS XC20P cipher; prove a failed AEAD check
+    // surfaces as IntegrityError there too
+    const tampered = { ...jwe, tag: jwe.tag.slice(0, -2) + 'AA' }
+    let tamperedErrorName = null
+    try {
+      await cipher.decrypt({ jwe: tampered, keyAgreementKey: kak })
+    } catch (err) {
+      tamperedErrorName = (err as Error).name
+    }
+    return { roundTripped, tamperedErrorName }
   })
 
-  expect(roundTripped).toBe(true)
+  expect(outcome).toEqual({
+    roundTripped: true,
+    tamperedErrorName: 'IntegrityError'
+  })
 })
